@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-AI CodeForge Web Application Launcher
+AI CodeForge v1.0.0 - Web Application Launcher
 Starts both the WebSocket backend and serves the frontend
+Enterprise Edition - Production Ready
 """
 
 import subprocess
@@ -77,7 +78,8 @@ def start_frontend():
 def main():
     """Main launcher function."""
     print("╭─────────────────────────────────────────╮")
-    print("│  AI CodeForge Web Application           │")
+    print("│  AI CodeForge v1.0.0                    │")
+    print("│  Web Application - Enterprise Edition  │")
     print("│  AAA Development Team UI                │")
     print("╰─────────────────────────────────────────╯\n")
     
