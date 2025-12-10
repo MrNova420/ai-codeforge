@@ -17,14 +17,14 @@
 ## ⚡ 60-Second Quick Start
 
 ```bash
-# 1. Install
-pip install -r requirements.txt
+# 1. Setup (creates virtual environment automatically)
+./setup.sh
 
-# 2. Start talking!
+# 2. Start talking! (no activation needed - wrappers handle it)
 ./talk "I need a login system for my website"
 ```
 
-**That's it!** See [QUICKSTART.md](QUICKSTART.md) for more.
+**That's it!** Works on all devices, all Python versions. See [QUICKSTART.md](QUICKSTART.md) for more.
 
 ---
 
@@ -94,12 +94,18 @@ git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 ./setup.sh
 
-# Start CLI
-codeforge
-
-# Or start Web App
-python3 webapp.py
+# That's it! No activation needed - all scripts auto-detect venv
+./codeforge              # Start CLI
+./webapp                 # Start web app
+./talk "create an API"   # Natural language interface
 ```
+
+**✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
+- Creates a virtual environment (solves PEP 668 externally-managed-environment errors)
+- Installs all dependencies
+- Creates wrapper scripts that auto-use the venv
+
+**💡 Optional:** Use `source activate.sh` to manually activate the venv for custom commands
 
 ### Manual Installation
 
@@ -108,16 +114,21 @@ python3 webapp.py
 git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment (recommended for all devices)
+python3 -m venv venv
 
-# Make CLI executable
-chmod +x codeforge
+# Install dependencies (using venv)
+venv/bin/pip install -r requirements.txt    # On Linux/Mac
+# Or: venv\Scripts\pip install -r requirements.txt  # On Windows
 
-# Run
-./codeforge              # Interactive CLI (recommended)
-# or: python3 start.py
-# or: ./run
+# Make scripts executable
+chmod +x codeforge run talk webapp start
+
+# Run directly (no activation needed!)
+./codeforge              # Interactive CLI
+./run                    # Main orchestrator
+./talk "build an API"    # Natural language
+./webapp                 # Web application
 # or: python3 orchestrator_v2.py
 ```
 

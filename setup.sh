@@ -21,10 +21,27 @@ fi
 PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 echo "✅ Found Python $PYTHON_VERSION"
 
+# Setup virtual environment
+echo ""
+VENV_DIR="venv"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv "$VENV_DIR"
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to create virtual environment."
+        echo "   Try: sudo apt install python3-venv python3-full"
+        exit 1
+    fi
+    echo "✅ Virtual environment created"
+else
+    echo "✅ Virtual environment already exists"
+fi
+
 # Install dependencies
 echo ""
 echo "📦 Installing dependencies..."
-pip install -r requirements.txt
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r requirements.txt
 
 # Make scripts executable
 echo ""
@@ -52,9 +69,15 @@ echo "╚═══════════════════════�
 echo ""
 echo "🚀 Quick Start:"
 echo ""
+echo "   First, activate the virtual environment:"
+echo "   source venv/bin/activate    # On Linux/Mac"
+echo "   venv\\Scripts\\activate       # On Windows"
+echo ""
+echo "   Then run:"
 echo "   ./codeforge              # Start interactive mode"
 echo "   ./codeforge help         # Show all commands"
 echo "   ./codeforge agents       # List all 23 agents"
+echo "   python3 webapp.py        # Start web application"
 echo ""
 echo "Or if global command installed:"
 echo ""
