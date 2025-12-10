@@ -63,12 +63,9 @@ class UnifiedInterface:
             from orchestrator_v2 import EnhancedOrchestrator
             self.orchestrator = EnhancedOrchestrator()
             
-            # Don't initialize CollaborationV3 directly - let orchestrator handle it
-            # The orchestrator will create agent_chats and collaboration_v3 when needed
-            
-            # Import collaboration engines for reference (not initialization)
-            from collaboration_enhanced import EnhancedCollaboration
-            self.collaboration_enhanced = EnhancedCollaboration()
+            # Don't initialize collaboration engines directly - let orchestrator handle them
+            # Both CollaborationV3 and EnhancedCollaboration need agent_chats parameter
+            # which the orchestrator creates and manages
             
             # Import agent management
             from orchestrator import AgentLoader
@@ -86,14 +83,21 @@ class UnifiedInterface:
                 self.vector_memory = None
                 
             from memory_manager import MemoryManager
-            self.memory_manager = MemoryManager()
+            from pathlib import Path
+            storage_dir = Path.home() / ".ai-codeforge" / "memory"
+            storage_dir.mkdir(parents=True, exist_ok=True)
+            self.memory_manager = MemoryManager(storage_dir)
             
             # Import file and code operations
             from file_manager import FileManager
             from code_executor import CodeExecutor
+            from pathlib import Path
             
-            self.file_manager = FileManager()
-            self.code_executor = CodeExecutor()
+            workspace_dir = Path.home() / ".ai-codeforge" / "workspace"
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+            
+            self.file_manager = FileManager(workspace_dir)
+            self.code_executor = CodeExecutor(workspace_dir)
             
             # Import researcher
             try:
