@@ -234,57 +234,30 @@ def execute_natural_request(user_input: str):
             border_style="green"
         ))
         
-        # Simulate generation (in real implementation, this calls the agents)
         console.print("\n[yellow]⚡ Generating code...[/yellow]")
         
-        # Example output
-        example_code = """
-def create_user_authentication():
-    \"\"\"
-    User authentication system with secure password hashing.
-    \"\"\"
-    from flask import Flask, request, jsonify
-    from werkzeug.security import generate_password_hash, check_password_hash
-    
-    app = Flask(__name__)
-    users_db = {}
-    
-    @app.route('/register', methods=['POST'])
-    def register():
-        data = request.json
-        username = data.get('username')
-        password = data.get('password')
+        # Use the actual result from unified interface instead of hardcoded example
+        if hasattr(result, 'content'):
+            generated_code = result.content
+        elif isinstance(result, dict) and 'content' in result:
+            generated_code = result['content']
+        elif isinstance(result, str):
+            generated_code = result
+        else:
+            generated_code = str(result)
         
-        if username in users_db:
-            return jsonify({'error': 'User exists'}), 400
-        
-        users_db[username] = generate_password_hash(password)
-        return jsonify({'message': 'User created'}), 201
-    
-    @app.route('/login', methods=['POST'])
-    def login():
-        data = request.json
-        username = data.get('username')
-        password = data.get('password')
-        
-        if username not in users_db:
-            return jsonify({'error': 'Invalid credentials'}), 401
-        
-        if check_password_hash(users_db[username], password):
-            return jsonify({'message': 'Login successful'}), 200
-        
-        return jsonify({'error': 'Invalid credentials'}), 401
-    
-    return app
-
-# Run the app
-if __name__ == '__main__':
-    app = create_user_authentication()
-    app.run(debug=True)
-        """
-        
+        # Display the actual generated code
         console.print("\n[green]✅ Done! Here's your code:[/green]\n")
-        syntax = Syntax(example_code, "python", theme="monokai", line_numbers=True)
+        
+        # Try to detect language for syntax highlighting
+        language = "python"  # default
+        if intent.get('type') == 'frontend' or any(word in user_input.lower() for word in ['html', 'css', 'javascript', 'react', 'vue']):
+            if '<html' in generated_code.lower() or '<div' in generated_code.lower():
+                language = "html"
+            elif 'function' in generated_code or 'const' in generated_code or '=>' in generated_code:
+                language = "javascript"
+        
+        syntax = Syntax(generated_code, language, theme="monokai", line_numbers=True)
         console.print(syntax)
         
         console.print("\n[cyan]💡 What would you like to do next?[/cyan]")

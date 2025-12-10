@@ -78,16 +78,27 @@ class ResearcherAgent:
         search_result = self.web_search(query=question, max_results=5)
         
         if not search_result.success:
-            return ResearchReport(
-                query=question,
-                summary=f"Research failed: {search_result.error}",
-                sources=[],
-                key_findings=[],
-                code_examples=[],
-                recommendations=[]
-            )
+            # Handle network failures gracefully
+            if search_result.metadata and search_result.metadata.get('offline'):
+                return ResearchReport(
+                    query=question,
+                    summary=f"Research for: '{question}'\n\nNetwork unavailable. Please check internet connection and try again.",
+                    sources=[],
+                    key_findings=["Network unavailable - cannot perform web search"],
+                    code_examples=[],
+                    recommendations=["Check internet connection", "Try again when online"]
+                )
+            else:
+                return ResearchReport(
+                    query=question,
+                    summary=f"Research failed: {search_result.error}",
+                    sources=[],
+                    key_findings=[],
+                    code_examples=[],
+                    recommendations=["Try rephrasing the query", "Check search service status"]
+                )
         
-        search_results = search_result.data
+        search_results = search_result.data if search_result.data else []
         print(f"   Found {len(search_results)} results")
         
         # Step 2: Read top pages (if depth allows)

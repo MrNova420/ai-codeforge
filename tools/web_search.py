@@ -109,23 +109,27 @@ class WebSearchTool(BaseTool):
                 }
             )
             
-        except requests.Timeout:
+        except (requests.Timeout, requests.ConnectionError) as e:
+            # Network issue - provide helpful fallback
             return ToolResult(
                 success=False,
-                data=None,
-                error="Search request timed out"
+                data=[],
+                error=f"Network unavailable. Search for '{query}' manually or check internet connection.",
+                metadata={'query': query, 'offline': True}
             )
         except requests.RequestException as e:
             return ToolResult(
                 success=False,
-                data=None,
-                error=f"Search request failed: {str(e)}"
+                data=[],
+                error=f"Search failed: {str(e)}",
+                metadata={'query': query}
             )
         except Exception as e:
             return ToolResult(
                 success=False,
-                data=None,
-                error=f"Unexpected error: {str(e)}"
+                data=[],
+                error=f"Unexpected error: {str(e)}",
+                metadata={'query': query}
             )
 
 
