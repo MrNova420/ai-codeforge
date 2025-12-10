@@ -379,6 +379,33 @@ class QueryOptimizer:
         return chunks
 
 
+# Module-level convenience functions
+def fast_startup(skip_checks: bool = False) -> None:
+    """
+    Quick startup function for the entire system.
+    Gets system ready in < 5 seconds.
+    
+    Args:
+        skip_checks: Skip non-critical checks for even faster startup
+    """
+    FastStartup.quick_start(skip_checks=skip_checks)
+
+
+def get_cache() -> ResponseCache:
+    """Get global cache instance."""
+    return get_performance_monitor().cache
+
+
+def optimize_memory() -> bool:
+    """Optimize system memory usage."""
+    try:
+        monitor = get_performance_monitor()
+        monitor.optimize_memory()
+        return True
+    except Exception:
+        return False
+
+
 class PerformanceMonitor:
     """
     Monitor system performance for optimization.
