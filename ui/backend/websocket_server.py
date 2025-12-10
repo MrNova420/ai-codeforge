@@ -320,11 +320,35 @@ async def get_system_status() -> Dict[str, Any]:
         minutes = (uptime_seconds % 3600) // 60
         uptime = f"{hours}h {minutes}m"
         
+        # Get system status with REAL task tracking
+        unified = get_unified_interface()
+        
+        # Get actual task counts from collaboration engine
+        task_stats = {
+            "running_tasks": 0,
+            "completed_tasks": 0,
+            "failed_tasks": 0,
+            "total_tasks": 0
+        }
+        
+        try:
+            if hasattr(unified, 'collab_engine') and unified.collab_engine:
+                collab = unified.collab_engine
+                if hasattr(collab, 'tasks'):
+                    task_stats["total_tasks"] = len(collab.tasks)
+                    task_stats["running_tasks"] = len([t for t in collab.tasks if t.status == 'running'])
+                    task_stats["completed_tasks"] = len([t for t in collab.tasks if t.status == 'complete'])
+                    task_stats["failed_tasks"] = len([t for t in collab.tasks if t.status == 'error'])
+        except Exception:
+            pass  # Use defaults if can't get stats
+        
         return {
             "health": "healthy",
             "active_agents": agent_count,
-            "running_tasks": 0,  # TODO: Track actual running tasks
-            "completed_tasks": 0,  # TODO: Track completed tasks
+            "running_tasks": task_stats["running_tasks"],
+            "completed_tasks": task_stats["completed_tasks"],
+            "failed_tasks": task_stats["failed_tasks"],
+            "total_tasks": task_stats["total_tasks"],
             "uptime": uptime,
             "connections": active_connections,
             "features": features_count,
