@@ -21,6 +21,42 @@
 
 ---
 
+## 🎯 Choose Your Interface
+
+AI CodeForge offers **two powerful ways** to work:
+
+### 1. 🌐 Web Application (NEW!)
+**Beautiful, user-friendly web interface** - Perfect for visual workflow!
+
+```bash
+python3 webapp.py
+# Open http://localhost:3000 in your browser
+```
+
+**Features:**
+- 📊 Real-time dashboard with live stats
+- 🤖 Visual agent management (all 23 agents)
+- 📋 Task creation and tracking
+- 💻 Built-in code editor with AI generation
+- 🔒 Security operations center
+- ⚙️ Complete configuration interface
+
+See [WEBAPP_GUIDE.md](WEBAPP_GUIDE.md) for full documentation.
+
+### 2. 💻 Command Line Interface
+**Fast, powerful CLI** - Perfect for developers!
+
+```bash
+# Simple interface
+./codeforge code "create REST API"
+./codeforge team "build authentication"
+
+# Advanced interface
+./codeforge_advanced status --watch
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -38,8 +74,11 @@ git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 ./setup.sh
 
-# Start using it immediately!
+# Start CLI
 codeforge
+
+# Or start Web App
+python3 webapp.py
 ```
 
 ### Manual Installation

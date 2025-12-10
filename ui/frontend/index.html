@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CodeForge - War Room</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🚀 CodeForge</h1>
+                <p>AAA Development Team</p>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="agents">
+                    <span class="icon">🤖</span>
+                    <span>Agents (23)</span>
+                </button>
+                <button class="nav-item" data-view="tasks">
+                    <span class="icon">📋</span>
+                    <span>Tasks</span>
+                </button>
+                <button class="nav-item" data-view="code">
+                    <span class="icon">💻</span>
+                    <span>Code Editor</span>
+                </button>
+                <button class="nav-item" data-view="security">
+                    <span class="icon">🔒</span>
+                    <span>Security</span>
+                </button>
+                <button class="nav-item" data-view="research">
+                    <span class="icon">🔬</span>
+                    <span>Research Lab</span>
+                </button>
+                <button class="nav-item" data-view="design">
+                    <span class="icon">🎨</span>
+                    <span>Design Studio</span>
+                </button>
+                <button class="nav-item" data-view="config">
+                    <span class="icon">⚙️</span>
+                    <span>Configuration</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot online"></span>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h2 id="page-title">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <button class="btn-icon" id="notifications">
+                        <span>🔔</span>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="btn-icon" id="settings">
+                        <span>⚙️</span>
+                    </button>
+                    <div class="user-profile">
+                        <span class="user-avatar">👤</span>
+                        <span class="user-name">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="views-container">
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🤖</div>
+                            <div class="stat-content">
+                                <div class="stat-label">Active Agents</div>
+                                <div class="stat-value">23</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📋</div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tasks Running</div>
+                                <div class="stat-value" id="tasks-running">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-content">
+                                <div class="stat-label">Completed Today</div>
+                                <div class="stat-value" id="tasks-completed">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-content">
+                                <div class="stat-label">Performance</div>
+                                <div class="stat-value">98%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="quick-actions">
+                                    <button class="action-btn primary" onclick="generateCode()">
+                                        <span>💻</span>
+                                        <span>Generate Code</span>
+                                    </button>
+                                    <button class="action-btn" onclick="runTests()">
+                                        <span>🧪</span>
+                                        <span>Run Tests</span>
+                                    </button>
+                                    <button class="action-btn" onclick="codeReview()">
+                                        <span>🔍</span>
+                                        <span>Code Review</span>
+                                    </button>
+                                    <button class="action-btn" onclick="securityScan()">
+                                        <span>🔒</span>
+                                        <span>Security Scan</span>
+                                    </button>
+                                    <button class="action-btn" onclick="deploy()">
+                                        <span>🚀</span>
+                                        <span>Deploy</span>
+                                    </button>
+                                    <button class="action-btn" onclick="research()">
+                                        <span>🔬</span>
+                                        <span>Research</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Activity Feed</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="activity-feed" class="activity-feed">
+                                    <!-- Activity populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Team Status</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="team-status" class="team-status">
+                                <!-- Agent status populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other views defined similarly but simplified for space -->
+                <div id="agents-view" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>All Agents (23)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="agents-grid" class="agents-grid">
+                                <!-- Agents populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks View -->
+                <div id="tasks-view" class="view">
+                    <div class="tasks-header">
+                        <button class="btn-primary" onclick="showNewTaskModal()">
+                            <span>➕</span>
+                            <span>New Task</span>
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="tasks-list" class="tasks-list">
+                                <!-- Tasks populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Editor View -->
+                <div id="code-view" class="view">
+                    <div class="code-editor-container">
+                        <div class="editor-header">
+                            <input type="text" class="file-input" id="code-prompt" placeholder="Enter task description...">
+                            <button class="btn-primary" onclick="generateCodeFromPrompt()">Generate Code</button>
+                        </div>
+                        <div class="editor-content">
+                            <textarea id="code-editor" class="code-editor" placeholder="// Code will appear here..."></textarea>
+                        </div>
+                        <div class="editor-footer">
+                            <button class="btn-secondary" onclick="copyCode()">Copy</button>
+                            <button class="btn-secondary" onclick="saveCode()">Save</button>
+                            <button class="btn-primary" onclick="executeCode()">Execute</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security View -->
+                <div id="security-view" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Security Operations Center</h3>
+                            <button class="btn-primary" onclick="runSecurityScan()">
+                                <span>🔍</span>
+                                <span>Run Security Scan</span>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="security-results" class="security-results">
+                                <div class="empty-state">
+                                    <span class="empty-icon">🔒</span>
+                                    <p>No security scans run yet</p>
+                                    <button class="btn-secondary" onclick="runSecurityScan()">Start First Scan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research View -->
+                <div id="research-view" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Innovation Lab</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="research-input">
+                                <input type="text" class="research-query" id="research-query" placeholder="What would you like to research?">
+                                <button class="btn-primary" onclick="startResearch()">Research</button>
+                            </div>
+                            <div id="research-results" class="research-results">
+                                <!-- Results appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Design View -->
+                <div id="design-view" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Design Studio</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="design-tools">
+                                <button class="btn-secondary" onclick="uxDesign()">UX Design</button>
+                                <button class="btn-secondary" onclick="uiComponents()">UI Components</button>
+                                <button class="btn-secondary" onclick="accessibilityAudit()">Accessibility Audit</button>
+                                <button class="btn-secondary" onclick="designSystem()">Design System</button>
+                            </div>
+                            <div id="design-canvas" class="design-canvas">
+                                <p>Design tools will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration View -->
+                <div id="config-view" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Configuration</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="config-section">
+                                <h4>Interface Mode</h4>
+                                <select class="config-select" id="interface-mode">
+                                    <option value="simple">Simple</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="expert">Expert</option>
+                                </select>
+                            </div>
+                            <div class="config-section">
+                                <h4>Default Agent</h4>
+                                <select class="config-select" id="default-agent">
+                                    <option value="felix">Felix (Developer)</option>
+                                    <option value="quinn">Quinn (QA)</option>
+                                    <option value="mira">Mira (Security)</option>
+                                    <option value="sage">Sage (Architect)</option>
+                                </select>
+                            </div>
+                            <div class="config-section">
+                                <h4>Performance</h4>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="enable-cache" checked>
+                                    <span>Enable Response Cache (100x faster)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="fast-startup" checked>
+                                    <span>Fast Startup (< 5 seconds)</span>
+                                </label>
+                            </div>
+                            <div class="config-section">
+                                <h4>Security</h4>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="docker-sandbox" checked>
+                                    <span>Docker Sandbox</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="network-isolation" checked>
+                                    <span>Network Isolation</span>
+                                </label>
+                            </div>
+                            <button class="btn-primary" onclick="saveConfiguration()">Save Configuration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for New Task -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Task</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Task Description</label>
+                    <textarea class="form-control" id="task-description" rows="3" placeholder="Describe what you want to build..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Work Mode</label>
+                    <select class="form-control" id="task-mode">
+                        <option value="parallel">Parallel (All agents simultaneously)</option>
+                        <option value="sequential">Sequential (Production pipeline)</option>
+                        <option value="collaborative">Collaborative (Iterative feedback)</option>
+                        <option value="autonomous">Autonomous (Self-organizing)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="createTask()">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
