@@ -5,12 +5,30 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 VENV_DIR="$SCRIPT_DIR/venv"
 
+# Debug: Show what we're checking
+if [ ! -z "$DEBUG" ]; then
+    echo "🔍 Checking for venv at: $VENV_DIR"
+fi
+
 # Use venv Python if available, otherwise use system Python
 if [ -d "$VENV_DIR" ]; then
     PYTHON="$VENV_DIR/bin/python3"
+    if [ ! -z "$DEBUG" ]; then
+        echo "✅ Using venv Python"
+    fi
 else
     PYTHON="python3"
+    if [ ! -z "$DEBUG" ]; then
+        echo "⚠️  venv not found, using system Python"
+    fi
+fi
+
+# Show startup message
+echo "🤖 Starting up..."
+if [ -d "$VENV_DIR" ]; then
+    echo "✅ Using virtual environment"
 fi
 
 # Run the actual Python script
+echo "🚀 Launching AI CodeForge..."
 exec "$PYTHON" "$SCRIPT_DIR/run.py" "$@"
