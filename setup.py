@@ -17,12 +17,10 @@ def setup_config():
             for line in lines:
                 if 'YOUR_OPENAI_API_KEY_HERE' in line:
                     key = input('Enter your OpenAI API key (or leave blank): ').strip()
-                    line = f'openai_api_key: "{key}"
-' if key else line
+                    line = f'openai_api_key: "{key}"\n' if key else line
                 if 'YOUR_GEMINI_API_KEY_HERE' in line:
                     key = input('Enter your Gemini API key (or leave blank): ').strip()
-                    line = f'gemini_api_key: "{key}"
-' if key else line
+                    line = f'gemini_api_key: "{key}"\n' if key else line
                 f.write(line)
         print("Config setup complete! You can edit config.yaml anytime to change settings.")
     else:

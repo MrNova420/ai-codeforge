@@ -1,12 +1,32 @@
-# 🤖 AI CodeForge
+# 🤖 AI CodeForge v1.0.0
 
-**Autonomous Multi-Agent AI Development System**
+**Complete AAA-Grade AI Development Team - Production Ready**
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](VERSION)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: Active](https://img.shields.io/badge/status-active-brightgreen.svg)]()
+[![Status: Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)]()
+[![Ready to Use](https://img.shields.io/badge/ready-100%25-success.svg)]()
 
-> An intelligent, self-learning multi-agent system with 23+ specialized AI agents that autonomously develop software, debug code, and collaborate like a real development team.
+> **Just talk to it!** 23 specialized AI agents working as a complete development team. No code required - describe what you want in plain English and watch it build!
+
+**🎉 NEW: Natural Language Interface** - "I need a login system" → Complete working code!
+
+---
+
+## ⚡ 60-Second Quick Start
+
+```bash
+# 1. Install
+pip install -r requirements.txt
+
+# 2. Start talking!
+./talk "I need a login system for my website"
+```
+
+**That's it!** See [QUICKSTART.md](QUICKSTART.md) for more.
+
+---
 
 ---
 
@@ -21,6 +41,42 @@
 
 ---
 
+## 🎯 Choose Your Interface
+
+AI CodeForge offers **two powerful ways** to work:
+
+### 1. 🌐 Web Application (NEW!)
+**Beautiful, user-friendly web interface** - Perfect for visual workflow!
+
+```bash
+python3 webapp.py
+# Open http://localhost:3000 in your browser
+```
+
+**Features:**
+- 📊 Real-time dashboard with live stats
+- 🤖 Visual agent management (all 23 agents)
+- 📋 Task creation and tracking
+- 💻 Built-in code editor with AI generation
+- 🔒 Security operations center
+- ⚙️ Complete configuration interface
+
+See [WEBAPP_GUIDE.md](WEBAPP_GUIDE.md) for full documentation.
+
+### 2. 💻 Command Line Interface
+**Fast, powerful CLI** - Perfect for developers!
+
+```bash
+# Simple interface
+./codeforge code "create REST API"
+./codeforge team "build authentication"
+
+# Advanced interface
+./codeforge_advanced status --watch
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -30,38 +86,96 @@
 - Ollama (for local LLMs) OR API keys (OpenAI/Gemini)
 ```
 
-### Installation
+### Easy Installation (Recommended)
 
 ```bash
-# Clone
-git clone https://github.com/YOUR_USERNAME/ai-codeforge.git
+# Clone and setup in one go
+git clone https://github.com/MrNova420/ai-codeforge.git
+cd ai-codeforge
+./setup.sh
+
+# Start CLI
+codeforge
+
+# Or start Web App
+python3 webapp.py
+```
+
+### Manual Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 
-# Setup (5-10 min first time)
-./setup_proper.py
+# Install dependencies
+pip install -r requirements.txt
 
-# Run (instant after setup)
-./run
+# Make CLI executable
+chmod +x codeforge
+
+# Run
+./codeforge              # Interactive CLI (recommended)
+# or: python3 start.py
+# or: ./run
+# or: python3 orchestrator_v2.py
+```
+
+### CLI Commands
+
+```bash
+# Interactive mode
+codeforge                              # Start interactive shell
+
+# Quick commands
+codeforge code "create REST API"       # Generate code
+codeforge test "api.py"                # Generate tests
+codeforge review "src/api.py"          # Review code
+codeforge fix "login bug"              # Fix issue
+codeforge design "checkout flow"       # Design feature
+codeforge security "src/"              # Security audit
+codeforge research "GraphQL"           # Research technology
+codeforge team "build app"             # Full team collaboration
+
+# Team modes
+codeforge team --parallel "task"       # All agents simultaneously
+codeforge team --sequential "task"     # Production pipeline
+codeforge team --collaborative "task"  # Agents discuss & iterate
+codeforge team --autonomous "task"     # Agents self-organize
+
+# Production cycle
+codeforge build "E-commerce Platform"  # Complete 6-phase workflow
+
+# Information
+codeforge help                         # Show all commands
+codeforge agents                       # List all 23 agents
+codeforge status                       # System status
 ```
 
 ---
 
-## 💡 Key Features
+## 💡 Key Features (V3 - Fully Integrated)
 
-### 1. Collaboration V3
-JSON-based multi-agent coordination with automatic task delegation and parallel execution.
+### 1. Collaboration V3 ✨
+JSON-based multi-agent coordination with automatic task delegation, parallel execution, and AgentManager for resilient threading.
 
-### 2. Codebase Graph
-Deep code understanding through AST parsing, relationship tracking, and semantic queries like "what calls this function?"
+### 2. Vector Memory System 🧠
+Persistent learning using ChromaDB with semantic search across past solutions, errors, code snippets, and feedback.
 
-### 3. Vector Memory
-Persistent learning system using ChromaDB for semantic search across past solutions, errors, and code snippets.
+### 3. Codebase Graph 📊
+Deep code understanding through AST parsing, relationship tracking, and semantic queries like "what calls this function?" and impact analysis.
 
-### 4. Self-Correction
-Agents that test their own code, detect errors, and automatically retry with improvements up to 3 times.
+### 4. Self-Correcting Agents 🔄
+Agents that test their own code, detect errors, learn from past failures, and automatically retry with improvements up to 3 times.
 
-### 5. Research Agent
-Web search integration that finds information, synthesizes documentation, and extracts code examples.
+### 5. Researcher Agent 🔍
+Web search integration that finds information, synthesizes documentation, extracts code examples, and generates research reports with citations.
+
+### 6. Tool Registry 🛠️
+Extensible tool system with centralized management, role-based access control, and usage tracking for all agent capabilities.
+
+### 7. Complete Agent Ecosystem 👥
+23 specialized agents working in harmony, each wrapped with advanced features like self-correction and memory access.
 
 ---
 

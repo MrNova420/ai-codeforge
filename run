@@ -38,34 +38,39 @@ def check_and_setup():
     
     print("🤖 Starting up...")
     
-    # Setup venv if needed
+    # Check for venv (optional - will use system Python if not present)
     venv_path = PROJECT_ROOT / "venv"
-    if not venv_path.exists():
-        print("\n⚠️  Virtual environment missing")
-        print("   Run: ./setup_proper.py\n")
-        sys.exit(0)
-    
-    print("✅ Ready!\n")
-    return venv_path
+    if venv_path.exists():
+        print("✅ Using virtual environment")
+        return venv_path
+    else:
+        print("✅ Using system Python")
+        return None
 
 def main():
     """Main entry"""
     try:
-        # Setup
+        # Check setup
         venv_path = check_and_setup()
         
-        # Launch with venv Python
-        python_exe = venv_path / "bin" / "python3"
+        # Determine Python executable
+        if venv_path:
+            python_exe = venv_path / "bin" / "python3"
+            if not python_exe.exists():
+                python_exe = venv_path / "Scripts" / "python.exe"  # Windows
+        else:
+            python_exe = sys.executable  # Use current Python
+        
         orchestrator = PROJECT_ROOT / "orchestrator_v2.py"
         
-        print("🚀 Launching AI Dev Team...\n")
+        print("🚀 Launching AI CodeForge...\n")
         subprocess.run([str(python_exe), str(orchestrator)])
         
     except KeyboardInterrupt:
         print("\n\nGoodbye!")
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        print("\nTry running: ./fix_setup.sh")
+        print("\n💡 Try: python3 orchestrator_v2.py")
         sys.exit(1)
 
 if __name__ == "__main__":
