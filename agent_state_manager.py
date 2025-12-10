@@ -376,6 +376,7 @@ class StateManager:
         Args:
             keep_last_n: Number of recent states to keep
         """
+        import os
         from pathlib import Path
         
         # Get all saved states
