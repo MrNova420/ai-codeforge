@@ -20,11 +20,9 @@ from rich.text import Text
 # Import existing components
 from orchestrator import AgentProfile, AgentLoader, Config
 
-# Import new components - ALL V3 Features
-from collaboration_simple import SimpleCollaboration
-from collaboration_enhanced import EnhancedCollaboration
-from collaboration_v3 import CollaborationV3  # V3 with JSON and threading
-from agent_chat_enhanced import EnhancedAgentChat
+# Import V3 components - CONSOLIDATED (No duplicates!)
+from collaboration_v3 import CollaborationV3  # Main: JSON parsing, parallel execution, AgentManager
+from agent_chat_enhanced import EnhancedAgentChat  # Main: Tools, file ops, code execution
 from memory_manager import MemoryManager
 from file_manager import FileManager
 from code_executor import CodeExecutor
@@ -69,7 +67,8 @@ class EnhancedOrchestrator:
         
         # Collaboration engine (initialized after agents loaded)
         self.collab_engine = None
-        self.use_enhanced = settings.ENHANCED_COLLABORATION
+        # Note: Always uses CollaborationV3 (latest with full features)
+        # No more switching between simple/enhanced - V3 is the unified solution
         
         # V3 Advanced Features - Initialize once
         console.print("[dim]🔧 Initializing V3 Advanced Features...[/dim]")
@@ -754,14 +753,14 @@ This is an example project created by the AI Dev Team.
             preset_choice = Prompt.ask("Select preset", choices=[str(i) for i in range(1, len(presets)+1)])
             preset_name = presets[int(preset_choice)-1]
             settings.apply_preset(preset_name)
-            self.use_enhanced = settings.ENHANCED_COLLABORATION
             console.print(f"\n✅ Applied '{preset_name}' preset!")
             
         elif choice == "2":
+            # Legacy toggle - kept for backwards compatibility but doesn't affect engine selection
             settings.ENHANCED_COLLABORATION = not settings.ENHANCED_COLLABORATION
-            self.use_enhanced = settings.ENHANCED_COLLABORATION
             mode = "Enhanced" if settings.ENHANCED_COLLABORATION else "Simple"
             console.print(f"\n✅ Collaboration mode: {mode}")
+            console.print("[dim](Note: Always uses CollaborationV3 - this is a legacy setting)[/dim]")
             
         elif choice == "3":
             console.print(f"\nCurrent timeouts:")
