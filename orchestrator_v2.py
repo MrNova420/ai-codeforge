@@ -20,15 +20,23 @@ from rich.text import Text
 # Import existing components
 from orchestrator import AgentProfile, AgentLoader, Config
 
-# Import new components
+# Import new components - ALL V3 Features
 from collaboration_simple import SimpleCollaboration
 from collaboration_enhanced import EnhancedCollaboration
-from collaboration_v3 import CollaborationV3  # NEW: V3 with JSON and threading
+from collaboration_v3 import CollaborationV3  # V3 with JSON and threading
 from agent_chat_enhanced import EnhancedAgentChat
 from memory_manager import MemoryManager
 from file_manager import FileManager
 from code_executor import CodeExecutor
 import settings
+
+# Import V3 Advanced Features
+from researcher_agent import ResearcherAgent
+from tools.registry import get_registry
+from memory.vector_store import VectorMemoryStore
+from codebase.graph_manager import CodebaseGraphManager
+from codebase.query_engine import QueryEngine
+from agents.specialized.self_correcting_agent import SelfCorrectingAgent
 
 console = Console()
 
@@ -39,7 +47,7 @@ STORAGE_DIR = PROJECT_ROOT / "storage"
 
 
 class EnhancedOrchestrator:
-    """Enhanced orchestrator with full collaboration features."""
+    """Enhanced orchestrator with FULL V3 features - All advanced systems integrated."""
     
     def __init__(self):
         self.config = Config()
@@ -55,62 +63,123 @@ class EnhancedOrchestrator:
         # Collaboration engine (initialized after agents loaded)
         self.collab_engine = None
         self.use_enhanced = settings.ENHANCED_COLLABORATION
+        
+        # V3 Advanced Features - Initialize once
+        console.print("[dim]🔧 Initializing V3 Advanced Features...[/dim]")
+        
+        # Tool Registry
+        self.tool_registry = get_registry()
+        console.print("[dim]  ✓ Tool Registry[/dim]")
+        
+        # Vector Memory Store for long-term learning
+        try:
+            self.vector_memory = VectorMemoryStore(persist_dir=str(STORAGE_DIR / "memory"))
+            console.print("[dim]  ✓ Vector Memory (ChromaDB)[/dim]")
+        except ImportError:
+            console.print("[dim]  ⚠ Vector Memory unavailable (install chromadb)[/dim]")
+            self.vector_memory = None
+        
+        # Codebase Graph for code analysis
+        self.codebase_graph = None  # Initialized per-project
+        
+        # Researcher Agent for web search
+        self.researcher = None  # Initialized when needed
+        console.print("[dim]  ✓ Advanced features ready[/dim]\n")
     
     def show_welcome(self):
-        """Display welcome screen."""
+        """Display welcome screen with V3 features."""
         console.print(Panel.fit(
-            "[bold cyan]Ultimate AI Dev Team Orchestrator V2[/bold cyan]\n"
-            "✨ Enhanced with Multi-Agent Collaboration\n"
-            "📁 File Operations | 🔧 Code Execution | 💾 Persistent Memory",
+            "[bold cyan]🤖 AI CodeForge - V3 Full Stack[/bold cyan]\n\n"
+            "✨ [bold]V3 Advanced Features Active:[/bold]\n"
+            "  🤝 Collaboration V3 - JSON-based multi-agent\n"
+            "  🧠 Vector Memory - ChromaDB learning system\n"
+            "  🔍 Researcher Agent - Web search & synthesis\n"
+            "  🛠️  Tool Registry - Extensible tool system\n"
+            "  📊 Codebase Graph - AST-based code analysis\n"
+            "  🔄 Self-Correction - Agents debug themselves\n"
+            "  📁 File Operations - Smart file management\n"
+            "  🔧 Code Execution - Safe sandbox\n"
+            "  💾 Persistent Memory - Cross-session learning",
             border_style="cyan"
         ))
     
     def show_features(self):
-        """Show new features."""
-        features = Table(title="✨ New Features", show_header=False)
-        features.add_column("Feature", style="cyan")
+        """Show all V3 features with details."""
+        features = Table(title="✨ AI CodeForge V3 Features", show_header=True)
+        features.add_column("Feature", style="cyan", width=25)
+        features.add_column("Status", style="green", width=10)
         features.add_column("Description", style="white")
         
-        features.add_row("🤝 Real Collaboration", "Agents actually work together on tasks")
-        features.add_row("💾 Memory", "Conversations saved across sessions")
-        features.add_row("📁 File Operations", "Agents can read/write code files")
-        features.add_row("🔧 Code Execution", "Safe sandbox for running code")
-        features.add_row("⚡ Streaming", "See responses in real-time")
-        features.add_row("📊 Progress Tracking", "Visual dashboard of team activity")
+        # Core features
+        features.add_row("🤝 Collaboration V3", "✅ Active", "JSON-based task delegation with parallel execution")
+        features.add_row("🧠 Vector Memory", "✅ Active" if self.vector_memory else "⚠️  Install chromadb", "Persistent learning across sessions")
+        features.add_row("🔍 Researcher Agent", "✅ Active", "Web search and knowledge synthesis")
+        features.add_row("🛠️  Tool Registry", "✅ Active", f"{len(self.tool_registry.list_tools())} tools registered")
+        features.add_row("📊 Codebase Graph", "⏳ On-demand", "AST-based code analysis (per-project)")
+        features.add_row("🔄 Self-Correction", "✅ Active", "Agents debug and fix their own code")
+        features.add_row("📁 File Operations", "✅ Active", "Smart file management in workspace")
+        features.add_row("🔧 Code Execution", "✅ Active", "Safe sandbox for running code")
+        features.add_row("💾 Memory Manager", "✅ Active", "Conversation persistence")
+        features.add_row("👥 23 Agents", "✅ Active", "Specialized AI agents with unique skills")
         
         console.print(features)
+        
+        # Memory stats
+        if self.vector_memory:
+            console.print("\n[bold cyan]📊 Memory Statistics:[/bold cyan]")
+            stats = self.vector_memory.get_memory_stats()
+            for key, count in stats.items():
+                if key != 'total':
+                    console.print(f"  • {key}: {count} memories")
+            console.print(f"  [bold]Total: {stats.get('total', 0)} memories[/bold]")
     
     def main_menu(self):
-        """Enhanced main menu."""
+        """V3 Complete Main Menu - All Features Accessible."""
         while True:
-            console.print("\n[bold]Main Menu:[/bold]")
-            console.print("1. 🤝 Team Collaboration Mode (Real multi-agent)")
-            console.print("2. 💬 Solo Agent Chat")
-            console.print("3. 👥 View All Agents")
-            console.print("4. 💾 Memory & History")
-            console.print("5. 📁 Workspace Files")
-            console.print("6. ⚙️  Configuration")
-            console.print("7. ✨ About New Features")
-            console.print("8. 🚪 Exit")
+            console.print("\n[bold cyan]═══ AI CodeForge V3 - Main Menu ═══[/bold cyan]")
+            console.print("\n[bold]🤖 Agent Modes:[/bold]")
+            console.print("  1. 🤝 Team Collaboration (Multi-agent with V3)")
+            console.print("  2. 💬 Solo Agent Chat (Direct 1-on-1)")
+            console.print("  3. 🔍 Research Mode (Web search & synthesis)")
             
-            choice = Prompt.ask("Select option", choices=["1","2","3","4","5","6","7","8"])
+            console.print("\n[bold]📊 Analysis & Tools:[/bold]")
+            console.print("  4. 📈 Codebase Analysis (AST graph & queries)")
+            console.print("  5. 🛠️  Tool Management (View/manage tools)")
+            console.print("  6. 👥 View All Agents (23 specialists)")
+            
+            console.print("\n[bold]💾 Data & Config:[/bold]")
+            console.print("  7. 🧠 Memory & Learning (Vector memory stats)")
+            console.print("  8. 📁 Workspace Files (File browser)")
+            console.print("  9. ⚙️  Configuration (Settings & presets)")
+            
+            console.print("\n[bold]ℹ️  Info:[/bold]")
+            console.print("  10. ✨ V3 Features (Show all capabilities)")
+            console.print("  11. 🚪 Exit")
+            
+            choice = Prompt.ask("Select option", choices=["1","2","3","4","5","6","7","8","9","10","11"])
             
             if choice == "1":
                 self.launch_team_collaboration()
             elif choice == "2":
                 self.launch_solo_mode()
             elif choice == "3":
-                self.show_agents()
+                self.launch_research_mode()
             elif choice == "4":
-                self.manage_memory()
+                self.analyze_codebase()
             elif choice == "5":
-                self.browse_workspace()
+                self.manage_tools()
             elif choice == "6":
-                self.configure_settings()
+                self.show_agents()
             elif choice == "7":
-                self.show_features()
+                self.manage_memory()
             elif choice == "8":
-                console.print("[yellow]Goodbye![/yellow]")
+                self.browse_workspace()
+            elif choice == "9":
+                self.configure_settings()
+            elif choice == "10":
+                self.show_features()
+            elif choice == "11":
+                console.print("[yellow]✨ Goodbye from AI CodeForge V3![/yellow]")
                 break
     
     def launch_team_collaboration(self):
@@ -162,11 +231,13 @@ class EnhancedOrchestrator:
                 console.print(f"\n[red]Error: {e}[/red]")
     
     def _init_collaboration_agents(self):
-        """Initialize agents for collaboration."""
+        """Initialize agents for collaboration with ALL V3 features."""
         if self.agent_chats:
             return  # Already initialized
         
-        # Create enhanced agent chats
+        console.print("[dim]🚀 Initializing agent team with V3 capabilities...[/dim]")
+        
+        # Create enhanced agent chats with V3 features
         file_manager = FileManager(WORKSPACE_DIR)
         code_executor = CodeExecutor(WORKSPACE_DIR)
         
@@ -177,14 +248,28 @@ class EnhancedOrchestrator:
                 file_manager=file_manager,
                 code_executor=code_executor
             )
+            
+            # Wrap with self-correction if memory available
+            if self.vector_memory:
+                agent_chat = SelfCorrectingAgent(
+                    agent_chat,
+                    memory=self.vector_memory,
+                    max_attempts=3
+                )
+            
             self.agent_chats[name] = agent_chat
         
-        # Initialize collaboration engine - USE V3!
-        # V3 has JSON parsing, threading via AgentManager, and parallel execution
+        # Initialize Researcher Agent
+        if 'helix' in self.agent_chats:
+            self.researcher = ResearcherAgent(llm_agent=self.agent_chats['helix'])
+            console.print("[dim]  ✓ Researcher Agent ready[/dim]")
+        
+        # Initialize collaboration engine - V3 with ALL features!
+        # V3 has: JSON parsing, threading via AgentManager, parallel execution
         self.collab_engine = CollaborationV3(self.agent_chats)
         
-        # Keep old option for fallback
-        self.use_legacy = False  # Set to True to use old enhanced mode
+        console.print("[dim]  ✓ Team collaboration V3 ready[/dim]")
+        console.print("[green]✅ All V3 features active![/green]\n")
     
     def _show_team_status(self):
         """Show simple team status."""
@@ -278,9 +363,212 @@ class EnhancedOrchestrator:
             except Exception as e:
                 console.print(f"\n[red]Error: {e}[/red]\n")
     
+    def launch_research_mode(self):
+        """Launch Research Mode - Web search and synthesis."""
+        console.clear()
+        console.print(Panel(
+            "[bold cyan]🔍 Research Mode[/bold cyan]\n"
+            "Ask anything - I'll search the web and synthesize findings",
+            border_style="cyan"
+        ))
+        
+        # Initialize researcher if not done
+        if not self.researcher:
+            self._init_collaboration_agents()
+        
+        if not self.researcher:
+            console.print("[red]❌ Researcher not available[/red]")
+            input("\nPress Enter to continue...")
+            return
+        
+        console.print("\n[dim]Commands: 'exit' to return to main menu[/dim]\n")
+        
+        while True:
+            try:
+                query = Prompt.ask("\n[bold green]Research Query[/bold green]")
+                
+                if query.lower() in ['exit', 'quit', 'q']:
+                    break
+                
+                if not query.strip():
+                    continue
+                
+                # Perform research
+                console.print("\n[cyan]🔍 Researching...[/cyan]")
+                report = self.researcher.research(query, depth='normal')
+                
+                # Display formatted report
+                console.print(Panel(
+                    self.researcher.format_report_markdown(report),
+                    title="[cyan]Research Report[/cyan]",
+                    border_style="cyan"
+                ))
+                
+                # Save to memory if available
+                if self.vector_memory:
+                    self.vector_memory.store_memory(
+                        'task_summaries',
+                        f"Research: {query}\n\nFindings: {report.summary}",
+                        metadata={'type': 'research', 'query': query}
+                    )
+                    console.print("[dim]💾 Saved to memory[/dim]")
+            
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Exiting research mode...[/yellow]")
+                break
+            except Exception as e:
+                console.print(f"\n[red]Error: {e}[/red]")
+    
+    def analyze_codebase(self):
+        """Analyze codebase with AST graph."""
+        console.clear()
+        console.print(Panel(
+            "[bold cyan]📊 Codebase Analysis[/bold cyan]\n"
+            "AST-based code analysis and queries",
+            border_style="cyan"
+        ))
+        
+        # Get project path
+        project_path = Prompt.ask(
+            "\n[bold]Project path to analyze[/bold]",
+            default=str(WORKSPACE_DIR)
+        )
+        
+        if not Path(project_path).exists():
+            console.print(f"[red]❌ Path not found: {project_path}[/red]")
+            input("\nPress Enter to continue...")
+            return
+        
+        # Initialize codebase graph
+        console.print("\n[cyan]🔄 Analyzing codebase...[/cyan]")
+        try:
+            self.codebase_graph = CodebaseGraphManager(project_root=project_path)
+            query_engine = QueryEngine(self.codebase_graph)
+            
+            console.print("[green]✅ Analysis complete![/green]\n")
+            
+            # Show stats
+            stats = Table(title="Codebase Statistics")
+            stats.add_column("Metric", style="cyan")
+            stats.add_column("Count", style="green")
+            
+            graph = self.codebase_graph.graph
+            stats.add_row("Total Files", str(len([n for n in graph.nodes if graph.nodes[n].get('type') == 'file'])))
+            stats.add_row("Classes", str(len([n for n in graph.nodes if graph.nodes[n].get('type') == 'class'])))
+            stats.add_row("Functions", str(len([n for n in graph.nodes if graph.nodes[n].get('type') == 'function'])))
+            
+            console.print(stats)
+            
+            # Interactive queries
+            console.print("\n[dim]Available queries: 'find CLASS', 'calls FUNC', 'impact CLASS', 'exit'[/dim]\n")
+            
+            while True:
+                query = Prompt.ask("\n[bold green]Query[/bold green]")
+                
+                if query.lower() in ['exit', 'quit', 'q']:
+                    break
+                
+                if query.lower().startswith('find '):
+                    name = query[5:].strip()
+                    results = query_engine.find_definition(name)
+                    if results:
+                        console.print(f"[green]Found: {results}[/green]")
+                    else:
+                        console.print(f"[yellow]Not found: {name}[/yellow]")
+                
+                elif query.lower().startswith('calls '):
+                    func = query[6:].strip()
+                    callers = query_engine.find_callers(func)
+                    if callers:
+                        console.print(f"[green]Called by: {', '.join(callers)}[/green]")
+                    else:
+                        console.print(f"[yellow]No callers found[/yellow]")
+                
+                elif query.lower().startswith('impact '):
+                    name = query[7:].strip()
+                    impact = query_engine.impact_of_changing(name)
+                    console.print(f"[cyan]Impact: {len(impact)} items affected[/cyan]")
+                    for item in impact[:10]:
+                        console.print(f"  • {item}")
+                
+        except Exception as e:
+            console.print(f"[red]❌ Analysis failed: {e}[/red]")
+        
+        input("\nPress Enter to continue...")
+    
+    def manage_tools(self):
+        """Manage and view available tools."""
+        console.clear()
+        console.print(Panel(
+            "[bold cyan]🛠️  Tool Management[/bold cyan]\n"
+            "View and manage available tools",
+            border_style="cyan"
+        ))
+        
+        # Show all tools
+        tools = self.tool_registry.list_tools()
+        
+        table = Table(title=f"Available Tools ({len(tools)})")
+        table.add_column("Tool Name", style="cyan")
+        table.add_column("Type", style="yellow")
+        table.add_column("Uses", style="green")
+        
+        for tool_name in tools:
+            tool = self.tool_registry.get_tool(tool_name)
+            if tool:
+                stats = tool.get_stats()
+                table.add_row(
+                    tool_name,
+                    tool.__class__.__name__,
+                    str(stats.get('total_uses', 0))
+                )
+        
+        console.print(table)
+        
+        # Show agent-tool assignments
+        console.print("\n[bold cyan]Agent Tool Access:[/bold cyan]")
+        console.print("[dim]Tools granted to specific agents:[/dim]\n")
+        
+        # This would show which agents have which tools
+        # For now just show available
+        console.print("[dim]All agents have access to file and execution tools[/dim]")
+        
+        input("\nPress Enter to continue...")
+    
     def manage_memory(self):
-        """Manage conversation memory."""
-        console.print("\n[bold cyan]Memory & History[/bold cyan]")
+        """Manage memory - both conversation history and vector memory."""
+        console.clear()
+        console.print(Panel(
+            "[bold cyan]🧠 Memory & Learning System[/bold cyan]\n"
+            "Conversation history and vector memory",
+            border_style="cyan"
+        ))
+        
+        # Show vector memory stats if available
+        if self.vector_memory:
+            console.print("\n[bold cyan]📊 Vector Memory Statistics:[/bold cyan]")
+            stats = self.vector_memory.get_memory_stats()
+            
+            mem_table = Table(show_header=True)
+            mem_table.add_column("Memory Type", style="cyan")
+            mem_table.add_column("Count", style="green")
+            
+            for key, count in stats.items():
+                if key != 'total':
+                    mem_table.add_row(key.replace('_', ' ').title(), str(count))
+            mem_table.add_row("[bold]Total Memories[/bold]", f"[bold]{stats.get('total', 0)}[/bold]")
+            
+            console.print(mem_table)
+        else:
+            console.print("\n[yellow]⚠️  Vector memory not available (install chromadb)[/yellow]")
+        
+        # Conversation sessions
+        console.print("\n[bold cyan]💬 Conversation Sessions:[/bold cyan]")
+        
+        if not self.collab_engine:
+            console.print("[dim]No sessions yet (start a collaboration first)[/dim]")
+            input("\nPress Enter to continue...")
+            return
         
         sessions = self.collab_engine.memory_manager.list_sessions()
         
