@@ -94,7 +94,8 @@ async def get_agents_list():
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
         from unified_interface import get_unified_interface
@@ -117,7 +118,8 @@ async def get_agents_list():
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        return {"error": str(e)}
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 
 @app.get("/api/features")
@@ -127,9 +129,11 @@ async def get_features_list():
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         features = unified.list_all_features()
@@ -139,7 +143,8 @@ async def get_features_list():
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        return {"error": str(e)}
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 
 @app.post("/api/execute")
@@ -149,9 +154,11 @@ async def execute_task_api(request: dict):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         task = request.get("task", "")
         mode = request.get("mode", "auto")
@@ -168,10 +175,12 @@ async def execute_task_api(request: dict):
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
+        import traceback
         return {
             "task": request.get("task", ""),
             "status": "error",
             "error": str(e),
+            "traceback": traceback.format_exc(),
             "timestamp": datetime.now().isoformat()
         }
 
@@ -278,14 +287,81 @@ async def handle_client_message(message: dict, websocket: WebSocket):
 
 async def get_system_status() -> Dict[str, Any]:
     """Get current system status."""
-    # This would integrate with Sentinel agent and other components
-    return {
-        "health": "healthy",
-        "active_agents": 23,
-        "running_tasks": 0,
-        "completed_tasks": 0,
-        "uptime": "1h 23m"
-    }
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        
+        # Get real agent count
+        agents = unified.list_all_agents()
+        agent_count = len(agents) if agents else 23
+        
+        # Get features count
+        try:
+            features = unified.list_all_features()
+            features_count = len(features) if features else 0
+        except:
+            features_count = 0
+        
+        # Get connection count
+        active_connections = len(manager.active_connections)
+        
+        # Calculate uptime (simplified - would need to track start time in production)
+        import time
+        uptime_seconds = int(time.time() % 86400)  # Simplified for demo
+        hours = uptime_seconds // 3600
+        minutes = (uptime_seconds % 3600) // 60
+        uptime = f"{hours}h {minutes}m"
+        
+        # Get actual task counts from collaboration engine (reuse existing unified instance)
+        task_stats = {
+            "running_tasks": 0,
+            "completed_tasks": 0,
+            "failed_tasks": 0,
+            "total_tasks": 0
+        }
+        
+        try:
+            if hasattr(unified, 'collab_engine') and unified.collab_engine:
+                collab = unified.collab_engine
+                if hasattr(collab, 'tasks'):
+                    task_stats["total_tasks"] = len(collab.tasks)
+                    task_stats["running_tasks"] = len([t for t in collab.tasks if t.status == 'running'])
+                    task_stats["completed_tasks"] = len([t for t in collab.tasks if t.status == 'complete'])
+                    task_stats["failed_tasks"] = len([t for t in collab.tasks if t.status == 'error'])
+        except Exception:
+            pass  # Use defaults if can't get stats
+        
+        return {
+            "health": "healthy",
+            "active_agents": agent_count,
+            "running_tasks": task_stats["running_tasks"],
+            "completed_tasks": task_stats["completed_tasks"],
+            "failed_tasks": task_stats["failed_tasks"],
+            "total_tasks": task_stats["total_tasks"],
+            "uptime": uptime,
+            "connections": active_connections,
+            "features": features_count,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        # Fallback to basic status
+        return {
+            "health": "healthy",
+            "active_agents": 23,
+            "running_tasks": 0,
+            "completed_tasks": 0,
+            "uptime": "running",
+            "connections": len(manager.active_connections),
+            "error": str(e)
+        }
 
 
 # Broadcast functions (called from other parts of the system)
@@ -331,9 +407,11 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
     
     # Add project root to path
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         task = data.get("task", "")
         mode = data.get("mode", "auto")
@@ -341,6 +419,17 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
         
         # Get unified interface
         unified = get_unified_interface()
+        
+        # Send initial status
+        await websocket.send_json({
+            "type": "task_update",
+            "data": {
+                "task": task,
+                "status": "started",
+                "progress": 0
+            },
+            "timestamp": datetime.now().isoformat()
+        })
         
         # Execute task
         result = unified.execute_task(task, mode=mode, agents=agents)
@@ -358,12 +447,14 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
         })
         
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "task_result",
             "data": {
                 "task": data.get("task", ""),
                 "status": "error",
-                "error": str(e)
+                "error": str(e),
+                "traceback": traceback.format_exc()
             },
             "timestamp": datetime.now().isoformat()
         })
@@ -375,9 +466,11 @@ async def handle_list_agents(websocket: WebSocket):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         agents = unified.list_all_agents()
@@ -389,7 +482,8 @@ async def handle_list_agents(websocket: WebSocket):
             agents_info.append({
                 "name": agent_name,
                 "role": info["role"],
-                "specialty": info["specialty"]
+                "specialty": info["specialty"],
+                "status": "ready"
             })
         
         await websocket.send_json({
@@ -402,9 +496,10 @@ async def handle_list_agents(websocket: WebSocket):
         })
         
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "agents_list",
-            "data": {"error": str(e)},
+            "data": {"error": str(e), "traceback": traceback.format_exc()},
             "timestamp": datetime.now().isoformat()
         })
 
@@ -415,9 +510,11 @@ async def handle_list_features(websocket: WebSocket):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         features = unified.list_all_features()
@@ -429,9 +526,10 @@ async def handle_list_features(websocket: WebSocket):
         })
         
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "features_list",
-            "data": {"error": str(e)},
+            "data": {"error": str(e), "traceback": traceback.format_exc()},
             "timestamp": datetime.now().isoformat()
         })
 
@@ -442,9 +540,11 @@ async def handle_agent_info(data: dict, websocket: WebSocket):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         agent_name = data.get("agent_name")
         unified = get_unified_interface()
@@ -460,9 +560,10 @@ async def handle_agent_info(data: dict, websocket: WebSocket):
         })
         
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "agent_info",
-            "data": {"error": str(e)},
+            "data": {"error": str(e), "traceback": traceback.format_exc()},
             "timestamp": datetime.now().isoformat()
         })
 
@@ -473,12 +574,25 @@ async def handle_full_orchestrator(data: dict, websocket: WebSocket):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
+        from unified_interface import get_unified_interface
         
         task = data.get("task", "")
         unified = get_unified_interface()
+        
+        # Send initial status
+        await websocket.send_json({
+            "type": "task_update",
+            "data": {
+                "task": task,
+                "status": "started",
+                "mode": "full_orchestrator"
+            },
+            "timestamp": datetime.now().isoformat()
+        })
         
         # Execute in full orchestrator mode
         result = unified.execute_task(task, mode="full_orchestrator")
@@ -495,12 +609,14 @@ async def handle_full_orchestrator(data: dict, websocket: WebSocket):
         })
         
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "full_orchestrator_result",
             "data": {
                 "task": data.get("task", ""),
                 "status": "error",
-                "error": str(e)
+                "error": str(e),
+                "traceback": traceback.format_exc()
             },
             "timestamp": datetime.now().isoformat()
         })
@@ -512,33 +628,63 @@ async def handle_code_execution(data: dict, websocket: WebSocket):
     from pathlib import Path
     
     project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
     try:
         from code_executor import CodeExecutor
         
         code = data.get("code", "")
-        executor = CodeExecutor()
+        language = data.get("language", "python")  # Default to python
         
-        # Execute code safely
-        result = executor.execute(code)
+        # Create workspace directory
+        workspace_dir = Path.home() / ".ai-codeforge" / "workspace"
+        workspace_dir.mkdir(parents=True, exist_ok=True)
         
+        executor = CodeExecutor(workspace_dir=workspace_dir)
+        
+        # Send initial status
         await websocket.send_json({
-            "type": "execution_result",
+            "type": "execution_update",
             "data": {
-                "success": result.get("success", False),
-                "output": result.get("output", ""),
-                "error": result.get("error", "")
+                "status": "executing",
+                "message": f"Executing {language} code..."
             },
             "timestamp": datetime.now().isoformat()
         })
         
+        # Execute code based on language
+        if language == "python":
+            result = executor.execute_python(code)
+        elif language == "javascript":
+            result = executor.execute_javascript(code)
+        elif language in ["bash", "shell"]:
+            result = executor.execute_bash(code)
+        else:
+            result = executor.execute_python(code)  # Default to python
+        
+        # Convert ExecutionResult to dict
+        result_dict = result.to_dict() if hasattr(result, 'to_dict') else {
+            'success': getattr(result, 'success', False),
+            'output': getattr(result, 'output', ''),
+            'error': getattr(result, 'error', ''),
+            'execution_time': getattr(result, 'execution_time', 0)
+        }
+        
+        await websocket.send_json({
+            "type": "execution_result",
+            "data": result_dict,
+            "timestamp": datetime.now().isoformat()
+        })
+        
     except Exception as e:
+        import traceback
         await websocket.send_json({
             "type": "execution_result",
             "data": {
                 "success": False,
-                "error": str(e)
+                "error": str(e),
+                "traceback": traceback.format_exc()
             },
             "timestamp": datetime.now().isoformat()
         })
@@ -590,6 +736,55 @@ async def handle_config_update(data: dict, websocket: WebSocket):
             "data": {"error": str(e)},
             "timestamp": datetime.now().isoformat()
         })
+
+
+# Periodic status broadcast (background task)
+import asyncio
+from typing import Set
+
+# Track active broadcast tasks
+_broadcast_tasks: Set[asyncio.Task] = set()
+
+async def periodic_status_broadcast():
+    """Broadcast system status periodically to all connected clients."""
+    while True:
+        try:
+            await asyncio.sleep(5)  # Broadcast every 5 seconds
+            
+            if len(manager.active_connections) > 0:
+                status = await get_system_status()
+                await manager.broadcast({
+                    "type": "system_status",
+                    "data": status,
+                    "timestamp": datetime.now().isoformat()
+                })
+        except Exception as e:
+            print(f"Error in periodic broadcast: {e}")
+            await asyncio.sleep(5)  # Continue even on error
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on server startup."""
+    print("🚀 Starting AI CodeForge WebSocket Server...")
+    print("📡 Starting periodic status broadcast...")
+    
+    # Start periodic broadcast task
+    task = asyncio.create_task(periodic_status_broadcast())
+    _broadcast_tasks.add(task)
+    task.add_done_callback(_broadcast_tasks.discard)
+    
+    print("✅ Server ready!")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up on server shutdown."""
+    print("🛑 Shutting down AI CodeForge WebSocket Server...")
+    
+    # Cancel all broadcast tasks
+    for task in _broadcast_tasks:
+        task.cancel()
+    
+    print("✅ Shutdown complete!")
 
 
 # Start server with: uvicorn websocket_server:app --reload

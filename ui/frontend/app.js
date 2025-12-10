@@ -84,6 +84,7 @@ function getNotificationIcon(type) {
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     initializeNavigation();
+    initializeHeaderButtons();
     populateAgents();
     populateActivityFeed();
     populateTeamStatus();
@@ -119,6 +120,256 @@ function switchView(viewName) {
     document.getElementById(`${viewName}-view`).classList.add('active');
 }
 
+// Header Button Handlers
+function initializeHeaderButtons() {
+    // Notifications button
+    const notificationsBtn = document.getElementById('notifications');
+    if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', showNotificationsPanel);
+    }
+    
+    // Settings button
+    const settingsBtn = document.getElementById('settings');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            switchView('config');
+            // Update nav state
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelector('[data-view="config"]').classList.add('active');
+            document.getElementById('page-title').textContent = 'Configuration';
+        });
+    }
+    
+    // User profile
+    const userProfile = document.querySelector('.user-profile');
+    if (userProfile) {
+        userProfile.addEventListener('click', showUserMenu);
+    }
+}
+
+function showNotificationsPanel() {
+    // Check if panel exists, otherwise create it
+    let panel = document.getElementById('notifications-panel');
+    
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'notifications-panel';
+        panel.className = 'notifications-panel';
+        document.body.appendChild(panel);
+    }
+    
+    // Toggle panel visibility
+    if (panel.classList.contains('active')) {
+        panel.classList.remove('active');
+        return;
+    }
+    
+    // Populate with recent activities
+    const notifications = appState.activities.slice(0, 10);
+    
+    panel.innerHTML = `
+        <div class="panel-header">
+            <h3>🔔 Notifications</h3>
+            <button class="panel-close" onclick="closeNotificationsPanel()">&times;</button>
+        </div>
+        <div class="panel-body">
+            ${notifications.length > 0 ? notifications.map(notif => `
+                <div class="notification-item">
+                    <span class="notification-icon">${notif.icon}</span>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title}</div>
+                        <div class="notification-time">${notif.meta}</div>
+                    </div>
+                </div>
+            `).join('') : '<p class="empty-message">No notifications yet</p>'}
+        </div>
+        <div class="panel-footer">
+            <button class="btn-link" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+    `;
+    
+    panel.classList.add('active');
+}
+
+function closeNotificationsPanel() {
+    const panel = document.getElementById('notifications-panel');
+    if (panel) {
+        panel.classList.remove('active');
+    }
+}
+
+function clearAllNotifications() {
+    appState.activities = [];
+    populateActivityFeed();
+    closeNotificationsPanel();
+    showNotification('success', 'All notifications cleared');
+}
+
+function showUserMenu() {
+    // Check if menu exists, otherwise create it
+    let menu = document.getElementById('user-menu');
+    
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'user-menu';
+        menu.className = 'user-menu';
+        document.body.appendChild(menu);
+        
+        // Position menu near user profile
+        const userProfile = document.querySelector('.user-profile');
+        const rect = userProfile.getBoundingClientRect();
+        menu.style.top = `${rect.bottom + 10}px`;
+        menu.style.right = `20px`;
+    }
+    
+    // Toggle menu visibility
+    if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        return;
+    }
+    
+    // Populate menu
+    menu.innerHTML = `
+        <div class="menu-item" onclick="showUserProfile()">
+            <span>👤</span>
+            <span>Profile</span>
+        </div>
+        <div class="menu-item" onclick="showPreferences()">
+            <span>⚙️</span>
+            <span>Preferences</span>
+        </div>
+        <div class="menu-item" onclick="showSystemInfo()">
+            <span>ℹ️</span>
+            <span>System Info</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="exportData()">
+            <span>💾</span>
+            <span>Export Data</span>
+        </div>
+        <div class="menu-item" onclick="importData()">
+            <span>📥</span>
+            <span>Import Data</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="showAbout()">
+            <span>📖</span>
+            <span>About</span>
+        </div>
+    `;
+    
+    menu.classList.add('active');
+    
+    // Close menu when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', closeUserMenuOnOutsideClick);
+    }, 100);
+}
+
+function closeUserMenuOnOutsideClick(event) {
+    const menu = document.getElementById('user-menu');
+    const userProfile = document.querySelector('.user-profile');
+    
+    if (menu && !menu.contains(event.target) && !userProfile.contains(event.target)) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeUserMenuOnOutsideClick);
+    }
+}
+
+function showUserProfile() {
+    closeUserMenu();
+    showNotification('info', 'User profile feature - Coming soon!');
+}
+
+function showPreferences() {
+    closeUserMenu();
+    switchView('config');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelector('[data-view="config"]').classList.add('active');
+    document.getElementById('page-title').textContent = 'Configuration';
+}
+
+function showSystemInfo() {
+    closeUserMenu();
+    const info = {
+        version: '1.0.0',
+        agents: appState.agents.length,
+        tasks: appState.tasks.length,
+        activities: appState.activities.length,
+        connected: appState.isConnected
+    };
+    
+    showNotification('info', `AI CodeForge v${info.version} | ${info.agents} agents | ${info.tasks} tasks | Status: ${info.connected ? 'Online' : 'Offline'}`);
+}
+
+function exportData() {
+    closeUserMenu();
+    const data = {
+        tasks: appState.tasks,
+        activities: appState.activities,
+        config: appState.config,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ai-codeforge-export-${Date.now()}.json`;
+    a.click();
+    
+    showNotification('success', 'Data exported successfully!');
+}
+
+function importData() {
+    closeUserMenu();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                
+                if (data.tasks) appState.tasks = data.tasks;
+                if (data.activities) appState.activities = data.activities;
+                if (data.config) appState.config = data.config;
+                
+                saveState();
+                populateTasks();
+                populateActivityFeed();
+                loadConfiguration();
+                
+                showNotification('success', 'Data imported successfully!');
+            } catch (error) {
+                showNotification('error', 'Failed to import data: Invalid format');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+function showAbout() {
+    closeUserMenu();
+    showNotification('info', 'AI CodeForge v1.0.0 - AAA Development Team | 23 AI Agents working together');
+}
+
+function closeUserMenu() {
+    const menu = document.getElementById('user-menu');
+    if (menu) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeUserMenuOnOutsideClick);
+    }
+}
+
+
 // WebSocket Connection
 function connectWebSocket() {
     try {
@@ -127,6 +378,14 @@ function connectWebSocket() {
         ws.onopen = () => {
             console.log('✅ Connected to AI CodeForge');
             updateConnectionStatus(true);
+            
+            // Request initial data
+            setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'get_status' }));
+                    ws.send(JSON.stringify({ type: 'list_agents' }));
+                }
+            }, 100);
         };
         
         ws.onmessage = (event) => {
@@ -201,11 +460,17 @@ function handleWebSocketMessage(message) {
         case 'system_status':
             updateSystemStatus(message.data);
             break;
+        case 'agents_list':
+            handleAgentsList(message);
+            break;
         case 'code_generated':
             handleCodeGenerated(message);
             break;
         case 'execution_result':
             handleExecutionResult(message);
+            break;
+        case 'execution_update':
+            handleExecutionUpdate(message);
             break;
         case 'research_result':
             handleResearchResult(message);
@@ -221,42 +486,47 @@ function handleWebSocketMessage(message) {
 
 // Agent Management
 function populateAgents() {
-    const agents = [
-        { name: 'Aurora', role: 'Product Manager', icon: '👔', category: 'planner' },
-        { name: 'Sage', role: 'Lead Architect', icon: '🏗️', category: 'planner' },
-        { name: 'Felix', role: 'Senior Developer', icon: '💻', category: 'planner' },
-        { name: 'Ember', role: 'Creative Director', icon: '💡', category: 'planner' },
-        { name: 'Orion', role: 'Code Reviewer', icon: '👀', category: 'critic' },
-        { name: 'Atlas', role: 'Performance Specialist', icon: '⚡', category: 'critic' },
-        { name: 'Mira', role: 'Security Engineer', icon: '🔒', category: 'critic' },
-        { name: 'Vex', role: 'Critical Analyst', icon: '🤔', category: 'critic' },
-        { name: 'Sol', role: 'Backend Specialist', icon: '🔧', category: 'specialist' },
-        { name: 'Echo', role: 'Frontend Developer', icon: '🎨', category: 'specialist' },
-        { name: 'Nova', role: 'DevOps Engineer', icon: '🚀', category: 'specialist' },
-        { name: 'Quinn', role: 'QA Lead', icon: '🧪', category: 'specialist' },
-        { name: 'Blaze', role: 'Mobile Developer', icon: '📱', category: 'specialist' },
-        { name: 'Ivy', role: 'Data Engineer', icon: '📊', category: 'specialist' },
-        { name: 'Zephyr', role: 'Cloud Architect', icon: '☁️', category: 'specialist' },
-        { name: 'Pixel', role: 'UX Designer', icon: '🎭', category: 'assistant' },
-        { name: 'Script', role: 'Tech Writer', icon: '📚', category: 'assistant' },
-        { name: 'Turbo', role: 'Performance Engineer', icon: '⚡', category: 'assistant' },
-        { name: 'Sentinel', role: 'SRE Lead', icon: '👁️', category: 'assistant' },
-        { name: 'Helix', role: 'Research Lead', icon: '🔬', category: 'special' },
-        { name: 'Patch', role: 'Bug Hunter', icon: '🐛', category: 'special' },
-        { name: 'Pulse', role: 'Integration Specialist', icon: '🔌', category: 'special' },
-        { name: 'Link', role: 'Collaboration Lead', icon: '🔗', category: 'special' }
-    ];
-    
-    appState.agents = agents;
+    // If we don't have agents yet, use default list
+    if (appState.agents.length === 0) {
+        const defaultAgents = [
+            { name: 'Aurora', role: 'Product Manager', icon: '👔', category: 'planner' },
+            { name: 'Sage', role: 'Lead Architect', icon: '🏗️', category: 'planner' },
+            { name: 'Felix', role: 'Senior Developer', icon: '💻', category: 'planner' },
+            { name: 'Ember', role: 'Creative Director', icon: '💡', category: 'planner' },
+            { name: 'Orion', role: 'Code Reviewer', icon: '👀', category: 'critic' },
+            { name: 'Atlas', role: 'Performance Specialist', icon: '⚡', category: 'critic' },
+            { name: 'Mira', role: 'Security Engineer', icon: '🔒', category: 'critic' },
+            { name: 'Vex', role: 'Critical Analyst', icon: '🤔', category: 'critic' },
+            { name: 'Sol', role: 'Backend Specialist', icon: '🔧', category: 'specialist' },
+            { name: 'Echo', role: 'Frontend Developer', icon: '🎨', category: 'specialist' },
+            { name: 'Nova', role: 'DevOps Engineer', icon: '🚀', category: 'specialist' },
+            { name: 'Quinn', role: 'QA Lead', icon: '🧪', category: 'specialist' },
+            { name: 'Blaze', role: 'Mobile Developer', icon: '📱', category: 'specialist' },
+            { name: 'Ivy', role: 'Data Engineer', icon: '📊', category: 'specialist' },
+            { name: 'Zephyr', role: 'Cloud Architect', icon: '☁️', category: 'specialist' },
+            { name: 'Pixel', role: 'UX Designer', icon: '🎭', category: 'assistant' },
+            { name: 'Script', role: 'Tech Writer', icon: '📚', category: 'assistant' },
+            { name: 'Turbo', role: 'Performance Engineer', icon: '⚡', category: 'assistant' },
+            { name: 'Sentinel', role: 'SRE Lead', icon: '👁️', category: 'assistant' },
+            { name: 'Helix', role: 'Research Lead', icon: '🔬', category: 'special' },
+            { name: 'Patch', role: 'Bug Hunter', icon: '🐛', category: 'special' },
+            { name: 'Pulse', role: 'Integration Specialist', icon: '🔌', category: 'special' },
+            { name: 'Link', role: 'Collaboration Lead', icon: '🔗', category: 'special' }
+        ];
+        
+        appState.agents = defaultAgents;
+    }
     
     // Populate agents grid
     const agentsGrid = document.getElementById('agents-grid');
     if (agentsGrid) {
-        agentsGrid.innerHTML = agents.map(agent => `
-            <div class="agent-card">
+        agentsGrid.innerHTML = appState.agents.map(agent => `
+            <div class="agent-card ${agent.status === 'busy' ? 'busy' : ''}">
                 <div class="icon">${agent.icon}</div>
                 <div class="name">${agent.name}</div>
                 <div class="role">${agent.role}</div>
+                ${agent.specialty ? `<div class="specialty">${agent.specialty}</div>` : ''}
+                ${agent.status ? `<div class="agent-card-status status-${agent.status}">${agent.status}</div>` : ''}
             </div>
         `).join('');
     }
@@ -264,15 +534,23 @@ function populateAgents() {
 
 function populateTeamStatus() {
     const teamStatus = document.getElementById('team-status');
-    if (teamStatus) {
+    if (teamStatus && appState.agents.length > 0) {
         const featuredAgents = appState.agents.slice(0, 8);
         teamStatus.innerHTML = featuredAgents.map(agent => `
             <div class="agent-status">
                 <div class="icon">${agent.icon}</div>
                 <div class="name">${agent.name}</div>
-                <div class="status">Ready</div>
+                <div class="status ${agent.status || 'ready'}">${agent.status || 'Ready'}</div>
             </div>
         `).join('');
+    } else if (teamStatus) {
+        // Fallback if no agents loaded yet
+        teamStatus.innerHTML = `
+            <div class="loading-message">
+                <span class="loading-spinner">⏳</span>
+                <p>Loading agents...</p>
+            </div>
+        `;
     }
 }
 
@@ -759,6 +1037,86 @@ function updateSystemStatus(status) {
     }
     if (status.completed_tasks !== undefined) {
         document.getElementById('tasks-completed').textContent = status.completed_tasks;
+    }
+    if (status.active_agents !== undefined) {
+        // Update agent count in navigation if needed
+        const agentsNav = document.querySelector('[data-view="agents"]');
+        if (agentsNav) {
+            const agentText = agentsNav.querySelector('span:last-child');
+            if (agentText) {
+                agentText.textContent = `Agents (${status.active_agents})`;
+            }
+        }
+    }
+    if (status.connections !== undefined) {
+        console.log(`Active connections: ${status.connections}`);
+    }
+}
+
+// Handle agents list from backend
+function handleAgentsList(message) {
+    const { data } = message;
+    
+    if (data.agents && data.agents.length > 0) {
+        // Update appState with real agent data
+        appState.agents = data.agents.map(agent => ({
+            name: agent.name,
+            role: agent.role,
+            icon: getAgentIcon(agent.name),
+            category: getAgentCategory(agent.role),
+            specialty: agent.specialty,
+            status: agent.status || 'ready'
+        }));
+        
+        // Update UI
+        populateAgents();
+        populateTeamStatus();
+        
+        console.log(`✅ Loaded ${data.agents.length} agents from backend`);
+    } else if (data.error) {
+        console.error('Failed to load agents:', data.error);
+        if (data.traceback) {
+            console.error('Traceback:', data.traceback);
+        }
+    }
+}
+
+// Get icon for agent by name
+function getAgentIcon(name) {
+    const icons = {
+        'aurora': '👔', 'sage': '🏗️', 'felix': '💻', 'ember': '💡',
+        'orion': '👀', 'atlas': '⚡', 'mira': '🔒', 'vex': '🤔',
+        'sol': '🔧', 'echo': '🎨', 'nova': '🚀', 'quinn': '🧪',
+        'blaze': '📱', 'ivy': '📊', 'zephyr': '☁️',
+        'pixel': '🎭', 'script': '📚', 'turbo': '⚡', 'sentinel': '👁️',
+        'helix': '🔬', 'patch': '🐛', 'pulse': '🔌', 'link': '🔗'
+    };
+    return icons[name.toLowerCase()] || '🤖';
+}
+
+// Get category for agent by role
+function getAgentCategory(role) {
+    const planners = ['Product Manager', 'Lead Architect', 'Senior Developer', 'Creative Director'];
+    const critics = ['Code Reviewer', 'Performance Specialist', 'Security Engineer', 'Critical Analyst'];
+    const specialists = ['Backend Specialist', 'Frontend Developer', 'DevOps Engineer', 'QA Lead', 
+                        'Mobile Developer', 'Data Engineer', 'Cloud Architect'];
+    const assistants = ['UX Designer', 'Tech Writer', 'Performance Engineer', 'SRE Lead'];
+    const special = ['Research Lead', 'Bug Hunter', 'Integration Specialist', 'Collaboration Lead'];
+    
+    if (planners.includes(role)) return 'planner';
+    if (critics.includes(role)) return 'critic';
+    if (specialists.includes(role)) return 'specialist';
+    if (assistants.includes(role)) return 'assistant';
+    if (special.includes(role)) return 'special';
+    return 'other';
+}
+
+// Handle execution update (progress messages)
+function handleExecutionUpdate(message) {
+    const { data } = message;
+    
+    if (data.status === 'executing') {
+        addActivity('⚡', data.message || 'Executing code...', 'Just now');
     }
 }
 
