@@ -56,30 +56,42 @@ Talk to CodeForge like you're talking to a developer friend:
 
 ## 📖 Examples - Just Copy and Paste!
 
-### Create Things
+### 🚀 Build Anything
 
 ```
-I need a login system for my website
-```
-
-```
-Create a REST API that handles blog posts
+Build a complete blog with user accounts and comments
 ```
 
 ```
-Build a todo app with React
+Create a REST API for managing products
 ```
 
 ```
-Make a Python script that organizes my downloads folder
+Make a React todo app with drag and drop
 ```
 
 ```
-Create a database schema for an e-commerce store
+Build a mobile app for tracking habits
 ```
 
 ```
-Build a contact form that sends emails
+Create a Python script to organize my files
+```
+
+```
+Build a real-time chat application
+```
+
+```
+Make a game where you collect coins
+```
+
+```
+Create an AI chatbot for customer service
+```
+
+```
+Build a data visualization dashboard
 ```
 
 ### Fix Things
@@ -140,22 +152,76 @@ Test all the user endpoints
 Write e2e tests for the checkout process
 ```
 
-### Security
+### 📊 Data & Analytics
 
 ```
-Check for security vulnerabilities
-```
-
-```
-Make the authentication more secure
+Analyze this CSV file and create charts
 ```
 
 ```
-Audit my code for SQL injection
+Build a reporting dashboard with graphs
 ```
 
 ```
-Add CSRF protection
+Create data visualizations for my data
+```
+
+```
+Make a recommendation system using AI
+```
+
+### 🎨 Design & UX
+
+```
+Design a modern interface for my app
+```
+
+```
+Create wireframes for an e-commerce site
+```
+
+```
+Make a beautiful landing page
+```
+
+```
+Design a mobile-first user interface
+```
+
+### 📚 Documentation
+
+```
+Write documentation for my API
+```
+
+```
+Create a README for this project
+```
+
+```
+Generate user guides
+```
+
+```
+Explain how this code works
+```
+
+### ⚡ Performance
+
+```
+Make my application faster
+```
+
+```
+Optimize database queries
+```
+
+```
+Improve loading times
+```
+
+```
+Speed up the API responses
 ```
 
 ### Deploy
@@ -196,45 +262,72 @@ Should I use REST or GraphQL?
 
 ---
 
-## 🎯 What Can You Ask For?
+## 🎯 What Can You Build?
 
-### Web Development
-- Login/authentication systems
-- REST APIs
-- Frontend interfaces (React, Vue, etc.)
-- Databases and schemas
-- Forms and validation
-- Search functionality
-- User profiles
+### 🌐 Web Applications
+- Complete websites (blogs, stores, portfolios)
+- REST APIs and GraphQL servers
+- Frontend interfaces (React, Vue, Angular)
+- Real-time applications (chat, collaboration)
+- Progressive Web Apps (PWAs)
 - Admin dashboards
+- Landing pages
 
-### Automation
-- File processing scripts
-- Data migration tools
+### 📱 Mobile Applications
+- iOS apps (Swift/React Native)
+- Android apps (Kotlin/React Native)
+- Cross-platform apps
+- Mobile games
+- Fitness trackers
+- Social apps
+
+### 🤖 AI & Machine Learning
+- Chatbots and virtual assistants
+- Recommendation systems
+- Image recognition
+- Natural language processing
+- Predictive analytics
+- Data classification
+
+### 🎮 Games & Graphics
+- 2D games (platformers, puzzles)
+- 3D visualizations
+- Interactive animations
+- Game engines
+- Physics simulations
+- Graphic design tools
+
+### 📊 Data & Analytics
+- Data analysis scripts
+- Visualization dashboards
+- Reporting tools
+- ETL pipelines
+- Business intelligence
+- Statistical analysis
+
+### 🛠️ Tools & Automation
+- File processing utilities
+- Web scrapers
+- Automation scripts
 - Backup systems
-- Report generators
-- Email automation
-- API integrations
+- Task schedulers
+- Data converters
 
-### Mobile
-- iOS apps
-- Android apps
-- React Native apps
-- Mobile-friendly interfaces
+### 🎨 Design & Creative
+- UI/UX designs
+- Wireframes and mockups
+- Logo design
+- Brand identity
+- Style guides
+- Design systems
 
-### DevOps
+### ☁️ Infrastructure & DevOps
 - Docker containers
 - CI/CD pipelines
-- Deployment scripts
-- Monitoring setup
+- Cloud deployments
+- Monitoring systems
 - Load balancers
-
-### Data
-- Database design
-- Data analysis scripts
-- ETL pipelines
-- Data visualization
-- Machine learning models
+- Infrastructure as code
 
 ---
 

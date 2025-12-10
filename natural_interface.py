@@ -27,29 +27,54 @@ def print_welcome():
     welcome_text = """
 # 🤖 Welcome to AI CodeForge!
 
-**Just talk to me like I'm your development team.**
+**Your complete AI development team - just talk naturally!**
 
-Tell me what you want to build, and I'll make it happen!
+I can help you build ANYTHING:
 
-## Examples of things you can say:
+## 🚀 What Can I Build For You?
 
-- "I need a login system for my website"
-- "Create a REST API that handles user data"
-- "Build a todo app with React"
-- "Make a Python script that organizes my files"
-- "Design a database for an e-commerce store"
-- "Add authentication to my Flask app"
-- "Fix the bug where users can't log out"
-- "Make my code run faster"
-- "Add tests for the login function"
-- "Deploy this to AWS"
+**Websites & Apps:**
+- "Build a blog with comments and user accounts"
+- "Create a React e-commerce store"
+- "Make a mobile app for recipes"
 
-**No coding knowledge needed - just describe it!**
+**APIs & Backends:**
+- "Create a REST API for my data"
+- "Build a GraphQL server"
+- "Make a real-time chat backend"
+
+**Data & Analytics:**
+- "Analyze this CSV and create visualizations"
+- "Build a data dashboard"
+- "Make an AI recommendation system"
+
+**Games & Graphics:**
+- "Create a 2D platformer game"
+- "Build a 3D visualization"
+- "Make an interactive animation"
+
+**Tools & Scripts:**
+- "Make a file organizer script"
+- "Build a web scraper"
+- "Create an automation tool"
+
+**Design:**
+- "Design a modern UI for my app"
+- "Create wireframes for a website"
+- "Make a logo and brand identity"
+
+**And Much More:**
+- Fix bugs, optimize code, add features
+- Write tests, documentation
+- Deploy to cloud, set up CI/CD
+- Research, learn, get advice
+
+**No coding knowledge needed - just tell me what you want!** 😊
     """
     
     console.print(Panel(
         Markdown(welcome_text),
-        title="💬 Natural Language Interface",
+        title="💬 I Can Build Anything You Imagine!",
         border_style="blue"
     ))
 
@@ -69,61 +94,88 @@ def understand_request(user_input: str) -> dict:
         "estimated_complexity": "medium"
     }
     
-    # Code generation keywords
-    if any(word in user_lower for word in ["create", "build", "make", "develop", "generate", "write"]):
+    # Code generation keywords (MAIN FOCUS)
+    if any(word in user_lower for word in ["create", "build", "make", "develop", "generate", "write", "add"]):
         intent["action"] = "generate"
         
         # What are they building?
-        if any(word in user_lower for word in ["api", "rest", "endpoint"]):
+        if any(word in user_lower for word in ["api", "rest", "endpoint", "backend"]):
             intent["type"] = "api"
-            intent["agents_needed"] = ["felix", "quinn", "mira"]
-        elif any(word in user_lower for word in ["website", "web app", "frontend"]):
+            intent["agents_needed"] = ["felix", "sol", "quinn"]
+        elif any(word in user_lower for word in ["website", "web app", "frontend", "react", "vue"]):
             intent["type"] = "frontend"
-            intent["agents_needed"] = ["echo", "pixel", "quinn"]
-        elif any(word in user_lower for word in ["database", "schema", "data model"]):
+            intent["agents_needed"] = ["echo", "pixel", "felix"]
+        elif any(word in user_lower for word in ["mobile", "app", "ios", "android"]):
+            intent["type"] = "mobile"
+            intent["agents_needed"] = ["blaze", "pixel", "quinn"]
+        elif any(word in user_lower for word in ["database", "schema", "data model", "sql"]):
             intent["type"] = "database"
-            intent["agents_needed"] = ["ivy", "sage"]
-        elif any(word in user_lower for word in ["login", "auth", "authentication", "signup"]):
+            intent["agents_needed"] = ["ivy", "sage", "felix"]
+        elif any(word in user_lower for word in ["login", "auth", "authentication", "signup", "user"]):
             intent["type"] = "authentication"
-            intent["agents_needed"] = ["felix", "mira", "quinn"]
+            intent["agents_needed"] = ["felix", "quinn", "orion"]
+        elif any(word in user_lower for word in ["script", "automation", "tool", "utility"]):
+            intent["type"] = "script"
+            intent["agents_needed"] = ["felix", "script"]
+        elif any(word in user_lower for word in ["game", "3d", "graphics"]):
+            intent["type"] = "game"
+            intent["agents_needed"] = ["felix", "echo", "pixel"]
+        elif any(word in user_lower for word in ["ai", "ml", "machine learning", "data science"]):
+            intent["type"] = "ai_ml"
+            intent["agents_needed"] = ["ivy", "helix", "felix"]
         else:
             intent["type"] = "general"
-            intent["agents_needed"] = ["felix", "quinn"]
+            intent["agents_needed"] = ["felix", "orion"]
+    
+    # Design keywords (EQUAL PRIORITY)
+    elif any(word in user_lower for word in ["design", "ui", "ux", "interface", "layout", "wireframe"]):
+        intent["action"] = "design"
+        intent["agents_needed"] = ["pixel", "echo", "ember"]
     
     # Bug fixing keywords
-    elif any(word in user_lower for word in ["fix", "bug", "error", "issue", "problem", "broken"]):
+    elif any(word in user_lower for word in ["fix", "bug", "error", "issue", "problem", "broken", "crash"]):
         intent["action"] = "fix"
         intent["agents_needed"] = ["patch", "felix", "orion"]
     
     # Testing keywords
-    elif any(word in user_lower for word in ["test", "testing", "unit test", "e2e"]):
+    elif any(word in user_lower for word in ["test", "testing", "unit test", "e2e", "qa"]):
         intent["action"] = "test"
         intent["agents_needed"] = ["quinn", "felix"]
     
     # Review/improvement keywords
-    elif any(word in user_lower for word in ["review", "check", "improve", "optimize", "refactor"]):
+    elif any(word in user_lower for word in ["review", "check", "improve", "optimize", "refactor", "better"]):
         intent["action"] = "review"
-        intent["agents_needed"] = ["orion", "atlas", "mira"]
-    
-    # Security keywords
-    elif any(word in user_lower for word in ["security", "secure", "vulnerability", "hack"]):
-        intent["action"] = "security"
-        intent["agents_needed"] = ["mira", "orion"]
-    
-    # Design keywords
-    elif any(word in user_lower for word in ["design", "ui", "ux", "interface", "layout"]):
-        intent["action"] = "design"
-        intent["agents_needed"] = ["pixel", "echo"]
+        intent["agents_needed"] = ["orion", "atlas", "felix"]
     
     # Deployment keywords
-    elif any(word in user_lower for word in ["deploy", "deployment", "publish", "release"]):
+    elif any(word in user_lower for word in ["deploy", "deployment", "publish", "release", "production"]):
         intent["action"] = "deploy"
         intent["agents_needed"] = ["nova", "zephyr", "sentinel"]
     
-    # Research keywords
-    elif any(word in user_lower for word in ["how", "what", "research", "learn", "explain"]):
+    # Research keywords (EQUAL PRIORITY)
+    elif any(word in user_lower for word in ["how", "what", "why", "research", "learn", "explain", "teach"]):
         intent["action"] = "research"
-        intent["agents_needed"] = ["helix", "sage"]
+        intent["agents_needed"] = ["helix", "sage", "script"]
+    
+    # Data/Analytics keywords
+    elif any(word in user_lower for word in ["data", "analytics", "report", "dashboard", "visualize"]):
+        intent["action"] = "data"
+        intent["agents_needed"] = ["ivy", "felix", "pixel"]
+    
+    # Documentation keywords
+    elif any(word in user_lower for word in ["document", "docs", "readme", "guide", "explain"]):
+        intent["action"] = "document"
+        intent["agents_needed"] = ["script", "felix"]
+    
+    # Performance keywords
+    elif any(word in user_lower for word in ["faster", "speed", "performance", "optimize"]):
+        intent["action"] = "optimize"
+        intent["agents_needed"] = ["atlas", "turbo", "felix"]
+    
+    # Security keywords (BALANCED - not overemphasized)
+    elif any(word in user_lower for word in ["security", "secure", "vulnerability", "safe"]):
+        intent["action"] = "security"
+        intent["agents_needed"] = ["mira", "felix", "orion"]
     
     # Help keywords
     elif any(word in user_lower for word in ["help", "assist", "guide"]):
@@ -253,13 +305,46 @@ if __name__ == '__main__':
     
     elif intent["action"] == "security":
         console.print(Panel(
-            f"[red]🔒 I'll perform a security audit![/red]\n\n"
-            f"📝 Scanning: {user_input}\n\n"
-            f"👥 Security team:\n" +
+            f"[cyan]🔒 I'll check security for you![/cyan]\n\n"
+            f"📝 Reviewing: {user_input}\n\n"
+            f"👥 Team:\n" +
             "\n".join([f"   • {agent}" for agent in intent["agents_needed"]]) +
-            "\n\n🔍 Checking for vulnerabilities...",
-            title="🔒 Security Scan",
-            border_style="red"
+            "\n\n✨ Ensuring everything is secure...",
+            title="🔒 Security Review",
+            border_style="cyan"
+        ))
+    
+    elif intent["action"] == "data":
+        console.print(Panel(
+            f"[blue]📊 I'll work with your data![/blue]\n\n"
+            f"📝 Task: {user_input}\n\n"
+            f"👥 Data team:\n" +
+            "\n".join([f"   • {agent}" for agent in intent["agents_needed"]]) +
+            "\n\n📈 Processing and analyzing...",
+            title="📊 Data Analytics",
+            border_style="blue"
+        ))
+    
+    elif intent["action"] == "document":
+        console.print(Panel(
+            f"[green]📚 I'll create documentation![/green]\n\n"
+            f"📝 Documenting: {user_input}\n\n"
+            f"👥 Documentation team:\n" +
+            "\n".join([f"   • {agent}" for agent in intent["agents_needed"]]) +
+            "\n\n✍️ Writing clear documentation...",
+            title="📚 Documentation",
+            border_style="green"
+        ))
+    
+    elif intent["action"] == "optimize":
+        console.print(Panel(
+            f"[yellow]⚡ I'll make it faster![/yellow]\n\n"
+            f"📝 Optimizing: {user_input}\n\n"
+            f"👥 Performance team:\n" +
+            "\n".join([f"   • {agent}" for agent in intent["agents_needed"]]) +
+            "\n\n🚀 Boosting performance...",
+            title="⚡ Performance Optimization",
+            border_style="yellow"
         ))
     
     elif intent["action"] == "design":
@@ -297,48 +382,66 @@ def show_help():
     help_text = """
 ## 💡 Here are some things you can say:
 
-**Create Things:**
-- "I need a login system"
-- "Build a REST API for blog posts"
-- "Create a React todo app"
-- "Make a Python script to process CSV files"
+**🚀 Create Anything:**
+- "Build a blog website with comments"
+- "Create a REST API for user management"
+- "Make a React todo app"
+- "Build a mobile app for iOS"
+- "Create a Python script to organize files"
+- "Build a game with graphics"
+- "Make an AI chatbot"
+- "Create a data visualization dashboard"
 
-**Fix Things:**
-- "Fix the bug where login doesn't work"
-- "The app crashes when I click submit"
-- "Users can't log out"
+**🎨 Design:**
+- "Design a login screen"
+- "Create wireframes for a shopping cart"
+- "Make a modern UI for my app"
+- "Design a logo and brand identity"
 
-**Improve Things:**
-- "Make this code faster"
-- "Review my authentication code"
-- "Optimize the database queries"
+**🐛 Fix & Improve:**
+- "Fix the bug where users can't log out"
+- "Make this code run faster"
+- "Improve the user experience"
+- "Optimize database performance"
 
-**Add Tests:**
-- "Add tests for the login function"
+**📊 Data & Analytics:**
+- "Analyze this data and create charts"
+- "Build a reporting dashboard"
+- "Create data visualizations"
+- "Make a machine learning model"
+
+**🧪 Testing:**
+- "Add tests for my functions"
 - "Create integration tests"
-- "Test the API endpoints"
+- "Test everything automatically"
 
-**Security:**
-- "Check for security vulnerabilities"
-- "Make this more secure"
-- "Audit the authentication system"
-
-**Deploy:**
+**🚀 Deploy:**
 - "Deploy this to AWS"
 - "Set up CI/CD pipeline"
 - "Publish to production"
 
-**Learn:**
-- "How do I implement OAuth?"
-- "What's the best way to structure a React app?"
-- "Explain microservices architecture"
+**📚 Learn & Research:**
+- "How do I build a REST API?"
+- "What's the best framework for my project?"
+- "Explain how databases work"
+- "Show me examples of good code"
 
-Just type naturally - I'll understand! 😊
+**📖 Documentation:**
+- "Write documentation for my code"
+- "Create a README file"
+- "Generate API documentation"
+
+**⚡ Performance:**
+- "Make my app faster"
+- "Optimize loading times"
+- "Improve performance"
+
+Just type naturally - I understand everything! 😊
     """
     
     console.print(Panel(
         Markdown(help_text),
-        title="💬 How to Talk to CodeForge",
+        title="💬 I Can Help With Everything!",
         border_style="blue"
     ))
 
