@@ -24,7 +24,9 @@
 ./talk "I need a login system for my website"
 ```
 
-**That's it!** Works on all devices, all Python versions. See [QUICKSTART.md](QUICKSTART.md) for more.
+**That's it!** Works on all devices, all Python versions.
+
+**📖 New to AI CodeForge?** Read [GETTING_STARTED.md](GETTING_STARTED.md) for a complete beginner's guide!
 
 ---
 
@@ -43,13 +45,35 @@
 
 ## 🎯 Choose Your Interface
 
-AI CodeForge offers **two powerful ways** to work:
+AI CodeForge offers **4 interfaces** - pick the one that fits your style:
 
-### 1. 🌐 Web Application (NEW!)
-**Beautiful, user-friendly web interface** - Perfect for visual workflow!
+### 🌟 1. Talk - Natural Language (Easiest!)
+**Best for:** Everyone, especially beginners
 
 ```bash
-python3 webapp.py
+./talk "I need a login system for my website"
+./talk "Create a REST API for a todo app"
+```
+
+**No commands to remember** - just describe what you want!
+
+### 💻 2. CodeForge CLI - Command Line
+**Best for:** Developers who like terminal commands
+
+```bash
+./codeforge code "create REST API"       # Generate code
+./codeforge test "api.py"                # Write tests
+./codeforge review "main.py"             # Code review
+./codeforge agents                       # List all agents
+```
+
+Fast and command-driven with specific operations.
+
+### 🌐 3. WebApp - Browser Interface
+**Best for:** Teams, visual users, dashboards
+
+```bash
+./webapp
 # Open http://localhost:3000 in your browser
 ```
 
@@ -57,23 +81,22 @@ python3 webapp.py
 - 📊 Real-time dashboard with live stats
 - 🤖 Visual agent management (all 23 agents)
 - 📋 Task creation and tracking
-- 💻 Built-in code editor with AI generation
-- 🔒 Security operations center
-- ⚙️ Complete configuration interface
+- 💻 Built-in code editor
+- 👥 Perfect for team collaboration
 
-See [WEBAPP_GUIDE.md](WEBAPP_GUIDE.md) for full documentation.
-
-### 2. 💻 Command Line Interface
-**Fast, powerful CLI** - Perfect for developers!
+### ⚡ 4. Run - Full Orchestrator (Power Users)
+**Best for:** Complex projects, production workflows
 
 ```bash
-# Simple interface
-./codeforge code "create REST API"
-./codeforge team "build authentication"
-
-# Advanced interface
-./codeforge_advanced status --watch
+./run
 ```
+
+**Advanced features:**
+- All 23 agents collaborating
+- Vector memory and learning
+- Web research capabilities
+- Code analysis and understanding
+- Self-debugging agents
 
 ---
 
@@ -103,11 +126,16 @@ cd ai-codeforge
 ./webapp                 # Web UI - Visual dashboard and management
 ```
 
-**What's the difference?**
-- **`./codeforge`**: Command-line interface with specific commands (good for developers)
-- **`./run`**: Main orchestrator with all 23 agents, collaboration, memory, and V3 features (most powerful)
-- **`./talk`**: Natural language interface - no commands needed, just chat (easiest for beginners)
-- **`./webapp`**: Web browser interface with visual controls (best for teams)
+**Which interface should you use?**
+
+| Interface | Best For | When to Use |
+|-----------|----------|-------------|
+| **`./talk`** | **Beginners, non-technical users** | Just describe what you want in plain English. No commands to remember! Start here if you're new. |
+| **`./codeforge`** | **Developers who like CLIs** | When you want specific operations (code, test, review, fix). Fast and command-driven. |
+| **`./webapp`** | **Teams, visual users** | When you prefer a web dashboard, need to share with team members, or want visual task management. |
+| **`./run`** | **Power users, complex projects** | When you need all 23 agents collaborating, advanced memory, research capabilities, and full V3 features. |
+
+**🎯 Start here:** New users should try `./talk` first - it's the easiest!
 
 **✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
 - Creates a virtual environment (solves PEP 668 externally-managed-environment errors)
