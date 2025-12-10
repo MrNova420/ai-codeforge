@@ -95,10 +95,19 @@ cd ai-codeforge
 ./setup.sh
 
 # That's it! No activation needed - all scripts auto-detect venv
-./codeforge              # Start CLI
-./webapp                 # Start web app
-./talk "create an API"   # Natural language interface
+
+# Choose your interface:
+./codeforge              # Interactive CLI with commands (code, test, review, etc.)
+./run                    # Full orchestrator - All 23 agents + V3 advanced features
+./talk "create an API"   # Natural language - Just describe what you want
+./webapp                 # Web UI - Visual dashboard and management
 ```
+
+**What's the difference?**
+- **`./codeforge`**: Command-line interface with specific commands (good for developers)
+- **`./run`**: Main orchestrator with all 23 agents, collaboration, memory, and V3 features (most powerful)
+- **`./talk`**: Natural language interface - no commands needed, just chat (easiest for beginners)
+- **`./webapp`**: Web browser interface with visual controls (best for teams)
 
 **✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
 - Creates a virtual environment (solves PEP 668 externally-managed-environment errors)
@@ -125,11 +134,11 @@ venv/bin/pip install -r requirements.txt    # On Linux/Mac
 chmod +x codeforge run talk webapp start
 
 # Run directly (no activation needed!)
-./codeforge              # Interactive CLI
-./run                    # Main orchestrator
-./talk "build an API"    # Natural language
-./webapp                 # Web application
-# or: python3 orchestrator_v2.py
+./codeforge              # CLI with specific commands (code, test, review)
+./run                    # Full orchestrator with all 23 agents + V3 features
+./talk "build an API"    # Natural language interface
+./webapp                 # Web browser UI
+# Or run Python directly: python3 orchestrator_v2.py
 ```
 
 ### CLI Commands
