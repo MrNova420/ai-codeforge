@@ -63,16 +63,11 @@ class UnifiedInterface:
             from orchestrator_v2 import EnhancedOrchestrator
             self.orchestrator = EnhancedOrchestrator()
             
-            # Load agent chats for collaboration
-            from agent_chat_enhanced import EnhancedAgentChat
-            agent_chat = EnhancedAgentChat()
-            agent_chats = agent_chat.agent_chats if hasattr(agent_chat, 'agent_chats') else {}
+            # Don't initialize CollaborationV3 directly - let orchestrator handle it
+            # The orchestrator will create agent_chats and collaboration_v3 when needed
             
-            # Import collaboration engines with proper initialization
-            from collaboration_v3 import CollaborationV3
+            # Import collaboration engines for reference (not initialization)
             from collaboration_enhanced import EnhancedCollaboration
-            
-            self.collaboration_v3 = CollaborationV3(agent_chats) if agent_chats else None
             self.collaboration_enhanced = EnhancedCollaboration()
             
             # Import agent management
@@ -211,12 +206,30 @@ class UnifiedInterface:
         else:
             console.print("[dim]Auto-selecting best agents for task[/dim]\n")
         
-        # Use collaboration engine
-        if self.collaboration_v3:
-            # Use V3 collaboration
-            return {"status": "team", "task": task, "agents": agents}
+        # Use orchestrator if available
+        if self.orchestrator:
+            # Initialize collaboration agents if not already done
+            if not self.orchestrator.agent_chats:
+                self.orchestrator._init_collaboration_agents()
+            
+            # Execute through collaboration engine
+            if self.orchestrator.collab_engine:
+                result = self.orchestrator.collab_engine.handle_request(task)
+                return {
+                    "status": "success",
+                    "mode": "team",
+                    "task": task,
+                    "agents": agents,
+                    "result": result
+                }
         
-        return {"status": "team_basic", "task": task}
+        return {
+            "status": "pending", 
+            "mode": "team",
+            "task": task,
+            "agents": agents,
+            "message": "Orchestrator not fully initialized. Use ./run for full team mode."
+        }
     
     def _run_solo_agent(self, task: str, agent_name: str) -> Any:
         """Run task with single agent."""
@@ -242,13 +255,14 @@ class UnifiedInterface:
         
         features = {
             "orchestrator": self.orchestrator is not None,
-            "collaboration_v3": hasattr(self, 'collaboration_v3'),
+            "collaboration_v3": (self.orchestrator and self.orchestrator.collab_engine is not None) if self.orchestrator else False,
             "vector_memory": self.vector_memory is not None,
             "researcher": self.researcher is not None,
             "tool_registry": hasattr(self, 'tool_registry'),
             "file_manager": hasattr(self, 'file_manager'),
             "code_executor": hasattr(self, 'code_executor'),
             "memory_manager": hasattr(self, 'memory_manager'),
+            "all_23_agents": self.orchestrator and hasattr(self.orchestrator, 'agent_loader') if self.orchestrator else False,
         }
         
         return features
