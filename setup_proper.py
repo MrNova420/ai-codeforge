@@ -91,7 +91,6 @@ def check_ollama_running():
 def get_ollama_models():
     """Get list of available Ollama models"""
     try:
-        import requests
         response = requests.get('http://localhost:11434/api/tags', timeout=2)
         if response.status_code == 200:
             return [m['name'] for m in response.json().get('models', [])]

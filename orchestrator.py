@@ -237,7 +237,6 @@ class Orchestrator:
     
     def launch_team_mode(self):
         """Launch team mode with Helix overseer."""
-        from agent_chat import TeamChat
         
         console.print("\n[bold cyan]Team Mode[/bold cyan]")
         console.print("[yellow]Launching Helix (Overseer)...[/yellow]")
@@ -256,7 +255,6 @@ class Orchestrator:
     
     def launch_solo_mode(self):
         """Launch individual agent."""
-        from agent_chat import ChatInterface
         
         console.print("\n[bold cyan]Solo Agent Mode[/bold cyan]")
         

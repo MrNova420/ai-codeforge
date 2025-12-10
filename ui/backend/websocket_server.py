@@ -129,7 +129,6 @@ async def get_features_list():
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         features = unified.list_all_features()
@@ -152,7 +151,6 @@ async def execute_task_api(request: dict):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         task = request.get("task", "")
         mode = request.get("mode", "auto")
@@ -335,7 +333,6 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         task = data.get("task", "")
         mode = data.get("mode", "auto")
@@ -380,7 +377,6 @@ async def handle_list_agents(websocket: WebSocket):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         agents = unified.list_all_agents()
@@ -421,7 +417,6 @@ async def handle_list_features(websocket: WebSocket):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         features = unified.list_all_features()
@@ -449,7 +444,6 @@ async def handle_agent_info(data: dict, websocket: WebSocket):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         agent_name = data.get("agent_name")
         unified = get_unified_interface()
@@ -481,7 +475,6 @@ async def handle_full_orchestrator(data: dict, websocket: WebSocket):
     sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
         
         task = data.get("task", "")
         unified = get_unified_interface()

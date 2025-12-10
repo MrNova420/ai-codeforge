@@ -173,28 +173,24 @@ async def run_command(command: str, args: list):
             print(result)
             
         elif command == "test":
-            from daily_workflow import test
             target = " ".join(args) if args else "tests/"
             print(f"\n🧪 Generating tests: {target}\n")
             result = await test(target)
             print(result)
             
         elif command == "review":
-            from daily_workflow import review
             target = " ".join(args) if args else "code"
             print(f"\n👀 Reviewing: {target}\n")
             result = await review(target)
             print(result)
             
         elif command == "fix":
-            from daily_workflow import fix
             issue = " ".join(args) if args else "bug"
             print(f"\n🔧 Fixing: {issue}\n")
             result = await fix(issue, "")
             print(result)
             
         elif command == "design":
-            from daily_workflow import design
             feature = " ".join(args) if args else "feature"
             print(f"\n🎨 Designing: {feature}\n")
             result = await design(feature)
@@ -238,7 +234,6 @@ async def run_command(command: str, args: list):
             print(result)
             
         elif command == "build":
-            from teams.master_orchestrator import MasterOrchestrator
             project = " ".join(args) if args else "Application"
             print(f"\n🏗️ Full production cycle: {project}\n")
             orchestrator = MasterOrchestrator()
@@ -346,7 +341,6 @@ def main():
     
     # Features list
     if command in ["features", "--features"]:
-        from unified_interface import get_unified_interface
         unified = get_unified_interface()
         features = unified.list_all_features()
         

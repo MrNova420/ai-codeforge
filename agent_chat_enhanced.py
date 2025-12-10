@@ -113,7 +113,6 @@ class EnhancedAgentChat:
     def _openai_chat_stream(self, content: str, on_token: Optional[Callable] = None) -> str:
         """Streaming OpenAI chat."""
         try:
-            import openai
             
             api_key = self.config.get('openai_api_key')
             if not api_key or api_key == "YOUR_OPENAI_API_KEY_HERE":
@@ -243,7 +242,6 @@ class EnhancedAgentChat:
     def _local_chat_stream(self, content: str, on_token: Optional[Callable] = None) -> str:
         """Streaming local model chat."""
         try:
-            import requests
             
             ollama_url = self.config.get('ollama_url', 'http://localhost:11434')
             model = self.model_name
