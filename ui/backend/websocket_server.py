@@ -248,6 +248,18 @@ async def handle_client_message(message: dict, websocket: WebSocket):
         # Execute task using unified interface
         await handle_task_execution(data, websocket)
     
+    elif msg_type == "execute_code":
+        # Execute code in Docker sandbox
+        await handle_code_execution(data, websocket)
+    
+    elif msg_type == "create_task":
+        # Create and track a new task
+        await handle_create_task(data, websocket)
+    
+    elif msg_type == "update_config":
+        # Update configuration
+        await handle_config_update(data, websocket)
+    
     elif msg_type == "list_agents":
         # List all available agents
         await handle_list_agents(websocket)
@@ -496,6 +508,92 @@ async def handle_full_orchestrator(data: dict, websocket: WebSocket):
                 "status": "error",
                 "error": str(e)
             },
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_code_execution(data: dict, websocket: WebSocket):
+    """Handle code execution in Docker sandbox."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from code_executor import CodeExecutor
+        
+        code = data.get("code", "")
+        executor = CodeExecutor()
+        
+        # Execute code safely
+        result = executor.execute(code)
+        
+        await websocket.send_json({
+            "type": "execution_result",
+            "data": {
+                "success": result.get("success", False),
+                "output": result.get("output", ""),
+                "error": result.get("error", "")
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "execution_result",
+            "data": {
+                "success": False,
+                "error": str(e)
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_create_task(data: dict, websocket: WebSocket):
+    """Create and track a new task."""
+    try:
+        task_id = data.get("id")
+        description = data.get("description", "")
+        mode = data.get("mode", "parallel")
+        
+        # Broadcast task creation
+        await manager.broadcast({
+            "type": "task_created",
+            "data": {
+                "id": task_id,
+                "description": description,
+                "mode": mode,
+                "status": "created"
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Start task execution in background
+        # This would integrate with task_manager.py or orchestrator
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "task_error",
+            "data": {"error": str(e)},
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_config_update(data: dict, websocket: WebSocket):
+    """Update system configuration."""
+    try:
+        # Save configuration (would integrate with config_manager.py)
+        await websocket.send_json({
+            "type": "config_updated",
+            "data": {"status": "success", "config": data},
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "config_error",
+            "data": {"error": str(e)},
             "timestamp": datetime.now().isoformat()
         })
 

@@ -63,11 +63,16 @@ class UnifiedInterface:
             from orchestrator_v2 import EnhancedOrchestrator
             self.orchestrator = EnhancedOrchestrator()
             
-            # Import collaboration engines
+            # Load agent chats for collaboration
+            from agent_chat_enhanced import EnhancedAgentChat
+            agent_chat = EnhancedAgentChat()
+            agent_chats = agent_chat.agent_chats if hasattr(agent_chat, 'agent_chats') else {}
+            
+            # Import collaboration engines with proper initialization
             from collaboration_v3 import CollaborationV3
             from collaboration_enhanced import EnhancedCollaboration
             
-            self.collaboration_v3 = CollaborationV3()
+            self.collaboration_v3 = CollaborationV3(agent_chats) if agent_chats else None
             self.collaboration_enhanced = EnhancedCollaboration()
             
             # Import agent management
