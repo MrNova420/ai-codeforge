@@ -62,7 +62,7 @@ class UnifiedInterface:
             try:
                 from memory.vector_store import VectorMemoryStore
                 self.vector_memory = VectorMemoryStore()
-            except:
+            except (ImportError, ModuleNotFoundError):
                 self.vector_memory = None
                 
             from memory_manager import MemoryManager
@@ -79,13 +79,13 @@ class UnifiedInterface:
             try:
                 from researcher_agent import ResearcherAgent
                 self.researcher = ResearcherAgent()
-            except:
+            except (ImportError, ModuleNotFoundError, AttributeError):
                 self.researcher = None
             
             self.features_initialized = True
             console.print("[dim]✅ All features initialized[/dim]")
             
-        except Exception as e:
+        except (ImportError, ModuleNotFoundError, AttributeError) as e:
             console.print(f"[yellow]⚠️  Some features unavailable: {e}[/yellow]")
             self.features_initialized = True  # Continue with what we have
     
