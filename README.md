@@ -45,7 +45,9 @@
 
 ## 🎯 Choose Your Interface
 
-AI CodeForge offers **4 interfaces** - pick the one that fits your style:
+AI CodeForge offers **4 interfaces** - pick the one that fits your style.
+
+**🔄 Universal Access:** All features (including full orchestrator, 23 agents, advanced capabilities) are accessible from any interface. Choose the UI you prefer, access any feature you need!
 
 ### 🌟 1. Talk - Natural Language (Easiest!)
 **Best for:** Everyone, especially beginners
@@ -136,6 +138,8 @@ cd ai-codeforge
 | **`./run`** | **Power users, complex projects** | When you need all 23 agents collaborating, advanced memory, research capabilities, and full V3 features. |
 
 **🎯 Start here:** New users should try `./talk` first - it's the easiest!
+
+**💡 Pro tip:** All features are accessible from any interface! You can start with `./talk` and still access the full orchestrator, or use `./webapp` with advanced agent collaboration. Pick the interface you like, access any feature you need!
 
 **✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
 - Creates a virtual environment (solves PEP 668 externally-managed-environment errors)

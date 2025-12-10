@@ -101,6 +101,36 @@ Then open your browser to **http://localhost:3000**
 
 ---
 
+## 🔄 All Features Are Accessible Everywhere!
+
+**Good news:** You don't have to choose just one interface! All functionality is accessible from any starting point:
+
+### From `./talk` (Natural Language):
+```bash
+./talk "use the full orchestrator to build a complex e-commerce platform"
+./talk "I need all 23 agents to collaborate on this project"
+./talk "activate advanced features for this task"
+```
+
+### From `./codeforge` (CLI):
+```bash
+./codeforge team "task" --mode collaborative    # Multi-agent mode
+./codeforge build "project"                     # Full production cycle
+```
+
+### From `./webapp` (Web Interface):
+- Use the "Advanced Mode" toggle in settings
+- Select "Full Orchestrator" from the mode dropdown
+- Choose specific agents or "All Agents" for collaboration
+
+### From `./run` (Orchestrator):
+- You already have everything! This is the full-featured mode
+- Access all 23 agents and advanced capabilities by default
+
+**The key:** Start with whichever interface you're comfortable with, and you can access any feature or mode from there!
+
+---
+
 ## Step 3: Try Your First Task
 
 Let's create something simple to test it out:
