@@ -315,7 +315,7 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
     
     # ========== PARALLEL MODE (from collaboration_v3.py) ==========
         
-    def handle_request(self, user_request: str, timeout: int = 180) -> Dict:
+    def _handle_parallel(self, user_request: str, timeout: int = 180) -> Dict:
         """Handle user request with parallel multi-agent execution."""
         if not self.overseer:
             return self._error_response("Helix (Overseer) not available")

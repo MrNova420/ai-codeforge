@@ -320,10 +320,7 @@ async def get_system_status() -> Dict[str, Any]:
         minutes = (uptime_seconds % 3600) // 60
         uptime = f"{hours}h {minutes}m"
         
-        # Get system status with REAL task tracking
-        unified = get_unified_interface()
-        
-        # Get actual task counts from collaboration engine
+        # Get actual task counts from collaboration engine (reuse existing unified instance)
         task_stats = {
             "running_tasks": 0,
             "completed_tasks": 0,
