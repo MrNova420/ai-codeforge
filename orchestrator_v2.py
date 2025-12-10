@@ -33,7 +33,10 @@ import settings
 # Import V3 Advanced Features
 from researcher_agent import ResearcherAgent
 from tools.registry import get_registry
-from memory.vector_store import VectorMemoryStore
+try:
+    from memory.vector_store import VectorMemoryStore
+except (ImportError, ModuleNotFoundError):
+    VectorMemoryStore = None  # Optional dependency
 from codebase.graph_manager import CodebaseGraphManager
 from codebase.query_engine import QueryEngine
 from agents.specialized.self_correcting_agent import SelfCorrectingAgent
@@ -72,10 +75,14 @@ class EnhancedOrchestrator:
         console.print("[dim]  ✓ Tool Registry[/dim]")
         
         # Vector Memory Store for long-term learning
-        try:
-            self.vector_memory = VectorMemoryStore(persist_dir=str(STORAGE_DIR / "memory"))
-            console.print("[dim]  ✓ Vector Memory (ChromaDB)[/dim]")
-        except ImportError:
+        if VectorMemoryStore:
+            try:
+                self.vector_memory = VectorMemoryStore(persist_dir=str(STORAGE_DIR / "memory"))
+                console.print("[dim]  ✓ Vector Memory (ChromaDB)[/dim]")
+            except Exception as e:
+                console.print(f"[dim]  ⚠ Vector Memory unavailable: {e}[/dim]")
+                self.vector_memory = None
+        else:
             console.print("[dim]  ⚠ Vector Memory unavailable (install chromadb)[/dim]")
             self.vector_memory = None
         
