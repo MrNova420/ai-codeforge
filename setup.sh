@@ -21,10 +21,27 @@ fi
 PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 echo "✅ Found Python $PYTHON_VERSION"
 
+# Setup virtual environment
+echo ""
+VENV_DIR="venv"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv "$VENV_DIR"
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to create virtual environment."
+        echo "   Try: sudo apt install python3-venv python3-full"
+        exit 1
+    fi
+    echo "✅ Virtual environment created"
+else
+    echo "✅ Virtual environment already exists"
+fi
+
 # Install dependencies
 echo ""
 echo "📦 Installing dependencies..."
-pip install -r requirements.txt
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r requirements.txt
 
 # Make scripts executable
 echo ""
@@ -50,16 +67,20 @@ echo "║   ✅ SETUP COMPLETE!                                         ║"
 echo "║                                                               ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
-echo "🚀 Quick Start:"
+echo "🚀 Quick Start - No activation needed!"
 echo ""
-echo "   ./codeforge              # Start interactive mode"
-echo "   ./codeforge help         # Show all commands"
-echo "   ./codeforge agents       # List all 23 agents"
+echo "   Choose your preferred interface (all features accessible from any):"
 echo ""
-echo "Or if global command installed:"
+echo "   ./talk \"build an API\"   # Easiest - Natural language (recommended for beginners)"
+echo "   ./codeforge              # CLI with commands (code, test, review, etc.)"
+echo "   ./webapp                 # Web UI - Visual dashboard in browser"
+echo "   ./run                    # Full orchestrator - All features enabled by default"
 echo ""
-echo "   codeforge               # From anywhere!"
+echo "💡 All interfaces can access:"
+echo "   • All 23 AI agents        • Multi-agent collaboration"
+echo "   • Advanced features       • Full orchestrator mode"
 echo ""
-echo "📚 Documentation: README.md"
+echo "📖 New User Guide: cat GETTING_STARTED.md"
+echo "📚 Full Documentation: README.md"
 echo "🤝 Support: https://github.com/MrNova420/ai-codeforge"
 echo ""

@@ -1,19 +1,9 @@
-#!/bin/bash
-# CodeForge CLI Wrapper - Automatically uses virtual environment if available
+#!/usr/bin/env python3
+"""
+CodeForge CLI - Advanced Command Line Interface
+Professional, feature-rich CLI for AI CodeForge with full control
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-VENV_DIR="$SCRIPT_DIR/venv"
-
-# Use venv Python if available, otherwise use system Python
-if [ -d "$VENV_DIR" ]; then
-    PYTHON="$VENV_DIR/bin/python3"
-else
-    PYTHON="python3"
-fi
-
-# Run the actual Python script
-exec "$PYTHON" "$SCRIPT_DIR/codeforge.py" "$@"
-
+Usage:
     codeforge                              # Interactive mode with TUI
     codeforge code "task"                  # Generate code
     codeforge test "file"                  # Generate tests
@@ -334,6 +324,38 @@ def main():
     # Status
     if command in ["status", "--status"]:
         show_status()
+        return
+    
+    # Full orchestrator mode
+    if command in ["orchestrator", "full", "all"]:
+        print_banner()
+        print("\n🚀 Activating Full Orchestrator Mode...")
+        print("   All 23 agents + V3 advanced features\n")
+        
+        from unified_interface import get_unified_interface
+        unified = get_unified_interface()
+        task = " ".join(args[1:]) if len(args) > 1 else "interactive"
+        
+        if task == "interactive":
+            print("💡 Starting full orchestrator in interactive mode")
+            print("   Use ./run for the complete orchestrator interface\n")
+        else:
+            result = unified.execute_task(task, mode="full_orchestrator")
+            print(f"\n✅ Task executed in full orchestrator mode")
+        return
+    
+    # Features list
+    if command in ["features", "--features"]:
+        from unified_interface import get_unified_interface
+        unified = get_unified_interface()
+        features = unified.list_all_features()
+        
+        print_banner()
+        print("\n✨ Available Features:\n")
+        for feature, available in features.items():
+            status = "✅" if available else "❌"
+            print(f"  {status} {feature.replace('_', ' ').title()}")
+        print()
         return
     
     # Run command

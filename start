@@ -1,5 +1,5 @@
 #!/bin/bash
-# AI CodeForge - Natural Language Interface Wrapper
+# AI CodeForge - Start Script Wrapper
 # Automatically uses virtual environment if available
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -13,4 +13,4 @@ else
 fi
 
 # Run the actual Python script
-exec "$PYTHON" "$SCRIPT_DIR/talk.py" "$@"
+exec "$PYTHON" "$SCRIPT_DIR/start.py" "$@"

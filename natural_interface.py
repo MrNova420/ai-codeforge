@@ -187,13 +187,39 @@ def understand_request(user_input: str) -> dict:
 
 def execute_natural_request(user_input: str):
     """
-    Execute a natural language request.
+    Execute a natural language request using unified interface.
     """
+    # Import unified interface
+    from unified_interface import get_unified_interface
+    
+    # Get unified interface instance
+    unified = get_unified_interface()
+    
+    # Check if user wants full orchestrator mode
+    user_lower = user_input.lower()
+    if any(keyword in user_lower for keyword in [
+        "full orchestrator", "all agents", "all 23 agents",
+        "advanced mode", "full mode", "orchestrator mode",
+        "use everything", "all features"
+    ]):
+        mode = "full_orchestrator"
+        console.print("\n[bold cyan]🚀 Activating Full Orchestrator Mode[/bold cyan]")
+        console.print("[dim]All 23 agents + V3 advanced features[/dim]\n")
+    else:
+        mode = "auto"  # Auto-detect best mode
+    
     # Understand what they want
     intent = understand_request(user_input)
     
     console.print(f"\n[cyan]💭 I understand you want to: [bold]{intent['action']}[/bold][/cyan]")
-    console.print(f"[dim]Assembling team: {', '.join(intent['agents_needed']) if intent['agents_needed'] else 'Full team'}[/dim]\n")
+    console.print(f"[dim]Assembling team: {', '.join(intent['agents_needed']) if intent['agents_needed'] else 'Auto-selecting'}[/dim]\n")
+    
+    # Execute through unified interface
+    result = unified.execute_task(
+        task=user_input,
+        mode=mode,
+        agents=intent['agents_needed'] if intent['agents_needed'] else None
+    )
     
     # Show what we're going to do
     if intent["action"] == "generate":
@@ -422,6 +448,13 @@ def show_help():
 
 **📚 Learn & Research:**
 - "How do I build a REST API?"
+
+**⚡ Access Advanced Features:**
+- "Use full orchestrator mode"
+- "Activate all 23 agents"
+- "Use advanced mode with all features"
+- "List all available agents"
+- "Show all features"
 - "What's the best framework for my project?"
 - "Explain how databases work"
 - "Show me examples of good code"
@@ -467,6 +500,32 @@ def chat_mode():
             # Check for help
             if user_input.lower() in ["help", "?"]:
                 show_help()
+                continue
+            
+            # Check for list agents command
+            if any(cmd in user_input.lower() for cmd in ["list agents", "show agents", "all agents", "list all agents"]):
+                from unified_interface import get_unified_interface
+                unified = get_unified_interface()
+                agents = unified.list_all_agents()
+                
+                console.print("\n[bold cyan]🤖 All 23 AI Agents:[/bold cyan]\n")
+                for i, agent in enumerate(agents, 1):
+                    info = unified.get_agent_info(agent)
+                    console.print(f"  {i:2d}. [bold]{agent:12}[/bold] - {info['role']:25} - {info['specialty']}")
+                console.print()
+                continue
+            
+            # Check for list features command
+            if any(cmd in user_input.lower() for cmd in ["list features", "show features", "what can you do", "capabilities"]):
+                from unified_interface import get_unified_interface
+                unified = get_unified_interface()
+                features = unified.list_all_features()
+                
+                console.print("\n[bold cyan]✨ Available Features:[/bold cyan]\n")
+                for feature, available in features.items():
+                    status = "✅" if available else "❌"
+                    console.print(f"  {status} {feature.replace('_', ' ').title()}")
+                console.print()
                 continue
             
             # Save to history

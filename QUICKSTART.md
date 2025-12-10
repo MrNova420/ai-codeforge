@@ -4,7 +4,9 @@
 
 ---
 
-## ✨ Three Ways to Use (Choose One)
+## ✨ Four Ways to Use (ALL FEATURES IN EACH)
+
+**NEW:** All interfaces now share the same unified system - access any feature from anywhere!
 
 ### 1️⃣ Natural Language (EASIEST!)
 
@@ -24,17 +26,26 @@ Then say things like:
 
 ---
 
-### 2️⃣ Web Application (VISUAL)
+### 2️⃣ Web Application (VISUAL) - **NOW WITH FULL API ACCESS**
 
-**Beautiful interface in your browser**
+**Beautiful interface in your browser + Complete REST/WebSocket API**
 
 ```bash
-python3 webapp.py
+./webapp
 ```
 
 Opens on: **http://localhost:3000**
+API: **http://localhost:8000**
+WebSocket: **ws://localhost:8000/ws**
 
-**Perfect for:** Visual workflow, teams
+**NEW Features:**
+- REST API endpoints for all features
+- WebSocket for real-time updates
+- Access to all 23 agents
+- Full orchestrator mode
+- See WEBAPP_API.md for complete API docs
+
+**Perfect for:** Visual workflow, teams, API integration
 
 ---
 
@@ -54,20 +65,22 @@ Opens on: **http://localhost:3000**
 
 ---
 
-## 📦 First Time Setup
+## 📦 First Time Setup (UPDATED - Works on ALL Devices)
 
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. (Optional) Run setup
+# 1. Run setup (auto-creates virtual environment)
 ./setup.sh
 
-# 3. Start using!
-./talk
+# 2. Start using ANY interface - no activation needed!
+./talk                    # Natural language
+./webapp                  # Web interface
+./codeforge              # CLI
+./run                    # Full orchestrator
 ```
 
 **That's it!** 🎉
+
+**NEW:** Setup now handles PEP 668 errors automatically. Works on Python 3.12+ and all devices.
 
 ---
 

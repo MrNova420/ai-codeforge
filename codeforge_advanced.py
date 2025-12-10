@@ -1,19 +1,32 @@
-#!/bin/bash
-# CodeForge Advanced CLI Wrapper
-# Automatically uses virtual environment if available
+#!/usr/bin/env python3
+"""
+CodeForge Advanced CLI - Professional Command Line Interface
+Enterprise-grade CLI with full control and advanced features
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-VENV_DIR="$SCRIPT_DIR/venv"
+Features:
+- Argument parsing with subcommands
+- Configuration management
+- History tracking
+- Export capabilities
+- Watch mode
+- JSON output
+- Custom workflows
+- Direct agent communication
+- Batch operations
+- Performance monitoring
+"""
 
-# Use venv Python if available, otherwise use system Python
-if [ -d "$VENV_DIR" ]; then
-    PYTHON="$VENV_DIR/bin/python3"
-else
-    PYTHON="python3"
-fi
+import sys
+import argparse
+import asyncio
+import json
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Optional, Any
 
-# Run the actual Python script
-exec "$PYTHON" "$SCRIPT_DIR/codeforge_advanced.py" "$@"
+# Add project root to path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 
 from rich.console import Console
 from rich.table import Table

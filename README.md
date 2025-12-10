@@ -10,21 +10,38 @@
 
 > **Just talk to it!** 23 specialized AI agents working as a complete development team. No code required - describe what you want in plain English and watch it build!
 
-**🎉 NEW: Natural Language Interface** - "I need a login system" → Complete working code!
+**🔥 NEW UPDATES:**
+- ✅ Universal setup - works on ALL devices (Python 3.12+ PEP 668 compliant)
+- ✅ Full integration - ALL features accessible from ANY interface
+- ✅ WebApp with complete REST/WebSocket API
+- ✅ Zero manual activation needed - automatic virtual environment
+
+**📚 Documentation:**
+- **Quick Start:** [QUICKSTART.md](QUICKSTART.md) - Get started in 60 seconds
+- **Complete Docs:** [DOCS_CONSOLIDATED.md](DOCS_CONSOLIDATED.md) - Everything in one place
+- **Beginner Guide:** [GETTING_STARTED.md](GETTING_STARTED.md) - Step-by-step tutorial
+- **WebApp API:** [WEBAPP_API.md](WEBAPP_API.md) - REST & WebSocket reference
 
 ---
 
 ## ⚡ 60-Second Quick Start
 
 ```bash
-# 1. Install
-pip install -r requirements.txt
+# 1. Setup (creates virtual environment automatically - works on ALL devices)
+./setup.sh
 
-# 2. Start talking!
-./talk "I need a login system for my website"
+# 2. Start using ANY interface - no activation needed!
+./talk "I need a login system for my website"   # Natural language
+./codeforge code "create REST API"               # CLI commands  
+./webapp                                          # Web interface
+./run                                            # Full orchestrator
 ```
 
-**That's it!** See [QUICKSTART.md](QUICKSTART.md) for more.
+**That's it!** Works on all devices, all Python versions (3.8+). Solves PEP 668 errors automatically.
+
+**📖 New to AI CodeForge?** Read [GETTING_STARTED.md](GETTING_STARTED.md) for a complete beginner's guide!
+
+**🔥 NEW:** All features accessible from any interface - unified integration complete!
 
 ---
 
@@ -43,13 +60,39 @@ pip install -r requirements.txt
 
 ## 🎯 Choose Your Interface
 
-AI CodeForge offers **two powerful ways** to work:
+AI CodeForge offers **4 interfaces** - pick the one that fits your style.
 
-### 1. 🌐 Web Application (NEW!)
-**Beautiful, user-friendly web interface** - Perfect for visual workflow!
+**🔄 FULLY INTEGRATED:** All features (including full orchestrator, 23 agents, V3 advanced capabilities) are accessible from ANY interface through the unified integration layer. Choose the UI you prefer, access any feature you need - no switching required!
+
+**Latest Update:** WebApp now has complete REST API and WebSocket access to entire project. See [WEBAPP_API.md](WEBAPP_API.md).
+
+### 🌟 1. Talk - Natural Language (Easiest!)
+**Best for:** Everyone, especially beginners
 
 ```bash
-python3 webapp.py
+./talk "I need a login system for my website"
+./talk "Create a REST API for a todo app"
+```
+
+**No commands to remember** - just describe what you want!
+
+### 💻 2. CodeForge CLI - Command Line
+**Best for:** Developers who like terminal commands
+
+```bash
+./codeforge code "create REST API"       # Generate code
+./codeforge test "api.py"                # Write tests
+./codeforge review "main.py"             # Code review
+./codeforge agents                       # List all agents
+```
+
+Fast and command-driven with specific operations.
+
+### 🌐 3. WebApp - Browser Interface
+**Best for:** Teams, visual users, dashboards
+
+```bash
+./webapp
 # Open http://localhost:3000 in your browser
 ```
 
@@ -57,23 +100,22 @@ python3 webapp.py
 - 📊 Real-time dashboard with live stats
 - 🤖 Visual agent management (all 23 agents)
 - 📋 Task creation and tracking
-- 💻 Built-in code editor with AI generation
-- 🔒 Security operations center
-- ⚙️ Complete configuration interface
+- 💻 Built-in code editor
+- 👥 Perfect for team collaboration
 
-See [WEBAPP_GUIDE.md](WEBAPP_GUIDE.md) for full documentation.
-
-### 2. 💻 Command Line Interface
-**Fast, powerful CLI** - Perfect for developers!
+### ⚡ 4. Run - Full Orchestrator (Power Users)
+**Best for:** Complex projects, production workflows
 
 ```bash
-# Simple interface
-./codeforge code "create REST API"
-./codeforge team "build authentication"
-
-# Advanced interface
-./codeforge_advanced status --watch
+./run
 ```
+
+**Advanced features:**
+- All 23 agents collaborating
+- Vector memory and learning
+- Web research capabilities
+- Code analysis and understanding
+- Self-debugging agents
 
 ---
 
@@ -94,12 +136,35 @@ git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 ./setup.sh
 
-# Start CLI
-codeforge
+# That's it! No activation needed - all scripts auto-detect venv
 
-# Or start Web App
-python3 webapp.py
+# Choose your interface:
+./codeforge              # Interactive CLI with commands (code, test, review, etc.)
+./run                    # Full orchestrator - All 23 agents + V3 advanced features
+./talk "create an API"   # Natural language - Just describe what you want
+./webapp                 # Web UI - Visual dashboard and management
 ```
+
+**Which interface should you use?**
+
+| Interface | Best For | When to Use |
+|-----------|----------|-------------|
+| **`./talk`** | **Beginners, non-technical users** | Just describe what you want in plain English. No commands to remember! Start here if you're new. |
+| **`./codeforge`** | **Developers who like CLIs** | When you want specific operations (code, test, review, fix). Fast and command-driven. |
+| **`./webapp`** | **Teams, visual users** | When you prefer a web dashboard, need to share with team members, or want visual task management. |
+| **`./run`** | **Power users, complex projects** | When you need all 23 agents collaborating, advanced memory, research capabilities, and full V3 features. |
+
+**🎯 Start here:** New users should try `./talk` first - it's the easiest!
+
+**💡 Pro tip:** All features are accessible from any interface! You can start with `./talk` and still access the full orchestrator, or use `./webapp` with advanced agent collaboration. Pick the interface you like, access any feature you need!
+
+**✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
+- Creates a virtual environment (solves PEP 668 externally-managed-environment errors)
+- Installs ALL dependencies (including chromadb, beautifulsoup4, fastapi, and all required packages)
+- Creates wrapper scripts that auto-use the venv
+- No optional dependencies - everything is included!
+
+**💡 Optional:** Use `source activate.sh` to manually activate the venv for custom commands
 
 ### Manual Installation
 
@@ -108,17 +173,22 @@ python3 webapp.py
 git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment (recommended for all devices)
+python3 -m venv venv
 
-# Make CLI executable
-chmod +x codeforge
+# Install dependencies (using venv)
+venv/bin/pip install -r requirements.txt    # On Linux/Mac
+# Or: venv\Scripts\pip install -r requirements.txt  # On Windows
 
-# Run
-./codeforge              # Interactive CLI (recommended)
-# or: python3 start.py
-# or: ./run
-# or: python3 orchestrator_v2.py
+# Make scripts executable
+chmod +x codeforge run talk webapp start
+
+# Run directly (no activation needed!)
+./codeforge              # CLI with specific commands (code, test, review)
+./run                    # Full orchestrator with all 23 agents + V3 features
+./talk "build an API"    # Natural language interface
+./webapp                 # Web browser UI
+# Or run Python directly: python3 orchestrator_v2.py
 ```
 
 ### CLI Commands
