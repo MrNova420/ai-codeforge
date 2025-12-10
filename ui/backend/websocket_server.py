@@ -63,6 +63,7 @@ app.add_middleware(
 
 # Connection manager
 manager = ConnectionManager()
+connection_manager = manager  # Alias for compatibility
 
 
 @app.get("/")

@@ -406,3 +406,7 @@ class StateManager:
             'complete': sum(1 for s in self.active_states.values() if s.status == 'complete'),
             'error': sum(1 for s in self.active_states.values() if s.status == 'error')
         }
+
+
+# Alias for compatibility
+AgentStateManager = StateManager
