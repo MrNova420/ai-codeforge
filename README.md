@@ -34,34 +34,45 @@
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/ai-codeforge.git
+git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 
-# Setup (5-10 min first time)
-./setup_proper.py
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup (first time - 5-10 min)
+python3 setup_proper.py
 
 # Run (instant after setup)
-./run
+python3 start.py
+# or: ./run
+# or: python3 orchestrator_v2.py
 ```
 
 ---
 
-## 💡 Key Features
+## 💡 Key Features (V3 - Fully Integrated)
 
-### 1. Collaboration V3
-JSON-based multi-agent coordination with automatic task delegation and parallel execution.
+### 1. Collaboration V3 ✨
+JSON-based multi-agent coordination with automatic task delegation, parallel execution, and AgentManager for resilient threading.
 
-### 2. Codebase Graph
-Deep code understanding through AST parsing, relationship tracking, and semantic queries like "what calls this function?"
+### 2. Vector Memory System 🧠
+Persistent learning using ChromaDB with semantic search across past solutions, errors, code snippets, and feedback.
 
-### 3. Vector Memory
-Persistent learning system using ChromaDB for semantic search across past solutions, errors, and code snippets.
+### 3. Codebase Graph 📊
+Deep code understanding through AST parsing, relationship tracking, and semantic queries like "what calls this function?" and impact analysis.
 
-### 4. Self-Correction
-Agents that test their own code, detect errors, and automatically retry with improvements up to 3 times.
+### 4. Self-Correcting Agents 🔄
+Agents that test their own code, detect errors, learn from past failures, and automatically retry with improvements up to 3 times.
 
-### 5. Research Agent
-Web search integration that finds information, synthesizes documentation, and extracts code examples.
+### 5. Researcher Agent 🔍
+Web search integration that finds information, synthesizes documentation, extracts code examples, and generates research reports with citations.
+
+### 6. Tool Registry 🛠️
+Extensible tool system with centralized management, role-based access control, and usage tracking for all agent capabilities.
+
+### 7. Complete Agent Ecosystem 👥
+23 specialized agents working in harmony, each wrapped with advanced features like self-correction and memory access.
 
 ---
 
