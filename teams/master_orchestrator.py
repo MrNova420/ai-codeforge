@@ -22,6 +22,11 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from agents.universal_agent_interface import UniversalAgent
 from agents.enhanced_agent_wrapper import EnhancedAgentWrapper
 from teams.production_team import ProductionTeam
+from agents.team_collaboration import get_agent_team
+from security.security_operations import get_security_ops
+from research.innovation_lab import get_innovation_lab
+from design.design_system import get_design_studio
+from integration.enterprise_hub import get_enterprise_hub
 
 
 class WorkMode(Enum):
