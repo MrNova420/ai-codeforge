@@ -218,10 +218,13 @@ Focus on WHAT was done and HOW it was accomplished."""
         
         # Store code snippets
         for i, code in enumerate(insight.code_snippets):
+            # Detect language from code patterns
+            language = self._detect_language(code)
+            
             self.vector_store.store_code_snippet(
                 code=code,
                 description=f"From task: {insight.task_description[:100]}",
-                language='python',  # TODO: Detect language
+                language=language,
                 tags=['synthesized', insight.task_description[:50]]
             )
         
@@ -256,6 +259,31 @@ Focus on WHAT was done and HOW it was accomplished."""
         )
         
         return memories
+    
+    def _detect_language(self, code: str) -> str:
+        """Detect programming language from code patterns."""
+        code_lower = code.lower()
+        
+        # Python indicators
+        if any(kw in code for kw in ['def ', 'import ', 'from ', 'class ']):
+            return 'python'
+        
+        # JavaScript/TypeScript indicators
+        if any(kw in code for kw in ['function ', 'const ', 'let ', 'var ', '=>']):
+            if 'interface ' in code or ': string' in code or ': number' in code:
+                return 'typescript'
+            return 'javascript'
+        
+        # Java indicators
+        if any(kw in code for kw in ['public class', 'private ', 'protected ']):
+            return 'java'
+        
+        # Go indicators  
+        if 'func ' in code and 'package ' in code:
+            return 'go'
+        
+        # Default
+        return 'python'
     
     def get_synthesis_stats(self) -> Dict[str, int]:
         """Get statistics about synthesized memories."""

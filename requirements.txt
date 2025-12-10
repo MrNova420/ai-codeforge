@@ -16,7 +16,7 @@ beautifulsoup4>=4.12.0
 requests-html>=0.10.0
 
 # Code Analysis (for codebase graph)
-# ast is stdlib, no need for external
+# ast is stdlib - used for AST parsing, code relationship tracking, and semantic queries
 
 # Optional: Web Framework (for examples)
 flask>=3.0.0

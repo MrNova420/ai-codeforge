@@ -371,11 +371,32 @@ class StateManager:
         """
         Clean up old task states, keeping only the most recent.
         
+        Strategy: Keep completed/error states for analysis, remove old pending states.
+        
         Args:
             keep_last_n: Number of recent states to keep
         """
-        # This would implement cleanup logic
-        pass
+        import os
+        from pathlib import Path
+        
+        # Get all saved states
+        state_files = list(Path(self.persist_dir).glob('*.json'))
+        
+        if len(state_files) <= keep_last_n:
+            return  # Nothing to clean
+        
+        # Sort by modification time
+        state_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        
+        # Keep recent ones, remove old
+        for state_file in state_files[keep_last_n:]:
+            try:
+                os.remove(state_file)
+                task_id = state_file.stem
+                if task_id in self.active_states:
+                    del self.active_states[task_id]
+            except Exception:
+                pass  # Ignore errors during cleanup
     
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about active states."""
