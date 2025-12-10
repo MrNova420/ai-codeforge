@@ -1021,3 +1021,81 @@ body {
         right: 20px !important;
     }
 }
+
+/* Agent Card Status Indicators */
+.agent-card {
+    position: relative;
+}
+
+.agent-card.busy {
+    border-color: var(--warning);
+    background: linear-gradient(135deg, var(--white) 0%, #fff9e6 100%);
+}
+
+.agent-card-status {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-ready {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-busy {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.specialty {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-top: 0.25rem;
+}
+
+/* Agent Status in Team Status */
+.agent-status .status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.agent-status .status.busy {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.agent-status .status.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Loading Message */
+.loading-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+.loading-message p {
+    color: var(--gray);
+    margin: 0;
+}

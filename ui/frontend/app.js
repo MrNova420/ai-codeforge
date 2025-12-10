@@ -378,6 +378,14 @@ function connectWebSocket() {
         ws.onopen = () => {
             console.log('✅ Connected to AI CodeForge');
             updateConnectionStatus(true);
+            
+            // Request initial data
+            setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'get_status' }));
+                    ws.send(JSON.stringify({ type: 'list_agents' }));
+                }
+            }, 100);
         };
         
         ws.onmessage = (event) => {
@@ -452,11 +460,17 @@ function handleWebSocketMessage(message) {
         case 'system_status':
             updateSystemStatus(message.data);
             break;
+        case 'agents_list':
+            handleAgentsList(message);
+            break;
         case 'code_generated':
             handleCodeGenerated(message);
             break;
         case 'execution_result':
             handleExecutionResult(message);
+            break;
+        case 'execution_update':
+            handleExecutionUpdate(message);
             break;
         case 'research_result':
             handleResearchResult(message);
@@ -472,42 +486,47 @@ function handleWebSocketMessage(message) {
 
 // Agent Management
 function populateAgents() {
-    const agents = [
-        { name: 'Aurora', role: 'Product Manager', icon: '👔', category: 'planner' },
-        { name: 'Sage', role: 'Lead Architect', icon: '🏗️', category: 'planner' },
-        { name: 'Felix', role: 'Senior Developer', icon: '💻', category: 'planner' },
-        { name: 'Ember', role: 'Creative Director', icon: '💡', category: 'planner' },
-        { name: 'Orion', role: 'Code Reviewer', icon: '👀', category: 'critic' },
-        { name: 'Atlas', role: 'Performance Specialist', icon: '⚡', category: 'critic' },
-        { name: 'Mira', role: 'Security Engineer', icon: '🔒', category: 'critic' },
-        { name: 'Vex', role: 'Critical Analyst', icon: '🤔', category: 'critic' },
-        { name: 'Sol', role: 'Backend Specialist', icon: '🔧', category: 'specialist' },
-        { name: 'Echo', role: 'Frontend Developer', icon: '🎨', category: 'specialist' },
-        { name: 'Nova', role: 'DevOps Engineer', icon: '🚀', category: 'specialist' },
-        { name: 'Quinn', role: 'QA Lead', icon: '🧪', category: 'specialist' },
-        { name: 'Blaze', role: 'Mobile Developer', icon: '📱', category: 'specialist' },
-        { name: 'Ivy', role: 'Data Engineer', icon: '📊', category: 'specialist' },
-        { name: 'Zephyr', role: 'Cloud Architect', icon: '☁️', category: 'specialist' },
-        { name: 'Pixel', role: 'UX Designer', icon: '🎭', category: 'assistant' },
-        { name: 'Script', role: 'Tech Writer', icon: '📚', category: 'assistant' },
-        { name: 'Turbo', role: 'Performance Engineer', icon: '⚡', category: 'assistant' },
-        { name: 'Sentinel', role: 'SRE Lead', icon: '👁️', category: 'assistant' },
-        { name: 'Helix', role: 'Research Lead', icon: '🔬', category: 'special' },
-        { name: 'Patch', role: 'Bug Hunter', icon: '🐛', category: 'special' },
-        { name: 'Pulse', role: 'Integration Specialist', icon: '🔌', category: 'special' },
-        { name: 'Link', role: 'Collaboration Lead', icon: '🔗', category: 'special' }
-    ];
-    
-    appState.agents = agents;
+    // If we don't have agents yet, use default list
+    if (appState.agents.length === 0) {
+        const defaultAgents = [
+            { name: 'Aurora', role: 'Product Manager', icon: '👔', category: 'planner' },
+            { name: 'Sage', role: 'Lead Architect', icon: '🏗️', category: 'planner' },
+            { name: 'Felix', role: 'Senior Developer', icon: '💻', category: 'planner' },
+            { name: 'Ember', role: 'Creative Director', icon: '💡', category: 'planner' },
+            { name: 'Orion', role: 'Code Reviewer', icon: '👀', category: 'critic' },
+            { name: 'Atlas', role: 'Performance Specialist', icon: '⚡', category: 'critic' },
+            { name: 'Mira', role: 'Security Engineer', icon: '🔒', category: 'critic' },
+            { name: 'Vex', role: 'Critical Analyst', icon: '🤔', category: 'critic' },
+            { name: 'Sol', role: 'Backend Specialist', icon: '🔧', category: 'specialist' },
+            { name: 'Echo', role: 'Frontend Developer', icon: '🎨', category: 'specialist' },
+            { name: 'Nova', role: 'DevOps Engineer', icon: '🚀', category: 'specialist' },
+            { name: 'Quinn', role: 'QA Lead', icon: '🧪', category: 'specialist' },
+            { name: 'Blaze', role: 'Mobile Developer', icon: '📱', category: 'specialist' },
+            { name: 'Ivy', role: 'Data Engineer', icon: '📊', category: 'specialist' },
+            { name: 'Zephyr', role: 'Cloud Architect', icon: '☁️', category: 'specialist' },
+            { name: 'Pixel', role: 'UX Designer', icon: '🎭', category: 'assistant' },
+            { name: 'Script', role: 'Tech Writer', icon: '📚', category: 'assistant' },
+            { name: 'Turbo', role: 'Performance Engineer', icon: '⚡', category: 'assistant' },
+            { name: 'Sentinel', role: 'SRE Lead', icon: '👁️', category: 'assistant' },
+            { name: 'Helix', role: 'Research Lead', icon: '🔬', category: 'special' },
+            { name: 'Patch', role: 'Bug Hunter', icon: '🐛', category: 'special' },
+            { name: 'Pulse', role: 'Integration Specialist', icon: '🔌', category: 'special' },
+            { name: 'Link', role: 'Collaboration Lead', icon: '🔗', category: 'special' }
+        ];
+        
+        appState.agents = defaultAgents;
+    }
     
     // Populate agents grid
     const agentsGrid = document.getElementById('agents-grid');
     if (agentsGrid) {
-        agentsGrid.innerHTML = agents.map(agent => `
-            <div class="agent-card">
+        agentsGrid.innerHTML = appState.agents.map(agent => `
+            <div class="agent-card ${agent.status === 'busy' ? 'busy' : ''}">
                 <div class="icon">${agent.icon}</div>
                 <div class="name">${agent.name}</div>
                 <div class="role">${agent.role}</div>
+                ${agent.specialty ? `<div class="specialty">${agent.specialty}</div>` : ''}
+                ${agent.status ? `<div class="agent-card-status status-${agent.status}">${agent.status}</div>` : ''}
             </div>
         `).join('');
     }
@@ -515,15 +534,23 @@ function populateAgents() {
 
 function populateTeamStatus() {
     const teamStatus = document.getElementById('team-status');
-    if (teamStatus) {
+    if (teamStatus && appState.agents.length > 0) {
         const featuredAgents = appState.agents.slice(0, 8);
         teamStatus.innerHTML = featuredAgents.map(agent => `
             <div class="agent-status">
                 <div class="icon">${agent.icon}</div>
                 <div class="name">${agent.name}</div>
-                <div class="status">Ready</div>
+                <div class="status ${agent.status || 'ready'}">${agent.status || 'Ready'}</div>
             </div>
         `).join('');
+    } else if (teamStatus) {
+        // Fallback if no agents loaded yet
+        teamStatus.innerHTML = `
+            <div class="loading-message">
+                <span class="loading-spinner">⏳</span>
+                <p>Loading agents...</p>
+            </div>
+        `;
     }
 }
 
@@ -1010,6 +1037,86 @@ function updateSystemStatus(status) {
     }
     if (status.completed_tasks !== undefined) {
         document.getElementById('tasks-completed').textContent = status.completed_tasks;
+    }
+    if (status.active_agents !== undefined) {
+        // Update agent count in navigation if needed
+        const agentsNav = document.querySelector('[data-view="agents"]');
+        if (agentsNav) {
+            const agentText = agentsNav.querySelector('span:last-child');
+            if (agentText) {
+                agentText.textContent = `Agents (${status.active_agents})`;
+            }
+        }
+    }
+    if (status.connections !== undefined) {
+        console.log(`Active connections: ${status.connections}`);
+    }
+}
+
+// Handle agents list from backend
+function handleAgentsList(message) {
+    const { data } = message;
+    
+    if (data.agents && data.agents.length > 0) {
+        // Update appState with real agent data
+        appState.agents = data.agents.map(agent => ({
+            name: agent.name,
+            role: agent.role,
+            icon: getAgentIcon(agent.name),
+            category: getAgentCategory(agent.role),
+            specialty: agent.specialty,
+            status: agent.status || 'ready'
+        }));
+        
+        // Update UI
+        populateAgents();
+        populateTeamStatus();
+        
+        console.log(`✅ Loaded ${data.agents.length} agents from backend`);
+    } else if (data.error) {
+        console.error('Failed to load agents:', data.error);
+        if (data.traceback) {
+            console.error('Traceback:', data.traceback);
+        }
+    }
+}
+
+// Get icon for agent by name
+function getAgentIcon(name) {
+    const icons = {
+        'aurora': '👔', 'sage': '🏗️', 'felix': '💻', 'ember': '💡',
+        'orion': '👀', 'atlas': '⚡', 'mira': '🔒', 'vex': '🤔',
+        'sol': '🔧', 'echo': '🎨', 'nova': '🚀', 'quinn': '🧪',
+        'blaze': '📱', 'ivy': '📊', 'zephyr': '☁️',
+        'pixel': '🎭', 'script': '📚', 'turbo': '⚡', 'sentinel': '👁️',
+        'helix': '🔬', 'patch': '🐛', 'pulse': '🔌', 'link': '🔗'
+    };
+    return icons[name.toLowerCase()] || '🤖';
+}
+
+// Get category for agent by role
+function getAgentCategory(role) {
+    const planners = ['Product Manager', 'Lead Architect', 'Senior Developer', 'Creative Director'];
+    const critics = ['Code Reviewer', 'Performance Specialist', 'Security Engineer', 'Critical Analyst'];
+    const specialists = ['Backend Specialist', 'Frontend Developer', 'DevOps Engineer', 'QA Lead', 
+                        'Mobile Developer', 'Data Engineer', 'Cloud Architect'];
+    const assistants = ['UX Designer', 'Tech Writer', 'Performance Engineer', 'SRE Lead'];
+    const special = ['Research Lead', 'Bug Hunter', 'Integration Specialist', 'Collaboration Lead'];
+    
+    if (planners.includes(role)) return 'planner';
+    if (critics.includes(role)) return 'critic';
+    if (specialists.includes(role)) return 'specialist';
+    if (assistants.includes(role)) return 'assistant';
+    if (special.includes(role)) return 'special';
+    return 'other';
+}
+
+// Handle execution update (progress messages)
+function handleExecutionUpdate(message) {
+    const { data } = message;
+    
+    if (data.status === 'executing') {
+        addActivity('⚡', data.message || 'Executing code...', 'Just now');
     }
 }
 
