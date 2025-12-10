@@ -109,7 +109,8 @@ Focus on WHAT was done and HOW it was accomplished."""
             try:
                 summary = self.llm_agent.generate(prompt)
                 return summary[:500]  # Limit length
-            except:
+            except Exception:
+                # LLM may not be available, use fallback
                 pass
         
         # Fallback: Simple summary

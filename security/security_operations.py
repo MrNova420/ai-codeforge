@@ -13,12 +13,11 @@ Features:
 - Security metrics and reporting
 """
 
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 import re
-import json
 from pathlib import Path
 
 

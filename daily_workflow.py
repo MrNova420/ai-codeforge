@@ -14,7 +14,7 @@ Usage:
 
 from typing import Dict, List, Optional, Any
 from agents.universal_agent_interface import UniversalAgent, ask_agent
-from performance_optimizer import cached_response, get_performance_monitor
+from performance_optimizer import get_performance_monitor
 from datetime import datetime
 
 

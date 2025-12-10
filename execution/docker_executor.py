@@ -14,7 +14,6 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from pathlib import Path
 import tempfile
-import shutil
 import subprocess
 import time
 
@@ -321,7 +320,8 @@ class DockerCodeExecutor:
                     print(f"✓ {lang} image ready")
                 else:
                     print(f"✗ {lang} image pull failed")
-            except:
+            except Exception:
+                # Image pull failed
                 results[lang] = False
         
         return results

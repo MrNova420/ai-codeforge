@@ -11,10 +11,8 @@ Provides:
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
-import asyncio
 import json
 from datetime import datetime
 
@@ -46,8 +44,8 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_text(message_json)
-            except:
-                # Handle broken connections
+            except Exception:
+                # Connection may be closed; ignore
                 pass
 
 

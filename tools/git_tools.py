@@ -11,8 +11,7 @@ Provides Git operations for agents:
 - Diff viewing
 """
 
-from typing import Optional, List, Dict, Any
-from pathlib import Path
+from typing import Optional
 import subprocess
 from tools.base_tool import BaseTool, ToolResult
 

@@ -9,10 +9,9 @@ Enhances EVERY agent with:
 - Performance tracking
 """
 
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
 
 
 @dataclass

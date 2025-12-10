@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
 """
-CodeForge CLI - Easy Command Line Interface
-Simple, intuitive CLI for AI CodeForge
+CodeForge CLI - Advanced Command Line Interface
+Professional, feature-rich CLI for AI CodeForge with full control
 
 Usage:
-    codeforge                    # Interactive mode
-    codeforge code "task"        # Generate code
-    codeforge test "file"        # Generate tests
-    codeforge review "file"      # Review code
-    codeforge fix "issue"        # Fix bugs
-    codeforge design "feature"   # Design feature
-    codeforge team "task"        # Full team collaboration
-    codeforge agents             # List all agents
-    codeforge help               # Show help
+    codeforge                              # Interactive mode with TUI
+    codeforge code "task"                  # Generate code
+    codeforge test "file"                  # Generate tests
+    codeforge review "file"                # Review code
+    codeforge fix "issue" [--code FILE]    # Fix bugs
+    codeforge design "feature"             # Design feature
+    codeforge team "task" [--mode MODE]    # Full team collaboration
+    codeforge build "project"              # Complete production cycle
+    codeforge security "path" [--report]   # Security audit
+    codeforge research "topic"             # Research technology
+    codeforge agents [--json]              # List all agents
+    codeforge status [--watch]             # System status
+    codeforge config [--set KEY=VALUE]     # Configuration
+    codeforge history [--limit N]          # Command history
+    codeforge chat AGENT "message"         # Direct agent chat
+    codeforge workflow create NAME         # Custom workflow
+    codeforge export [--format FORMAT]     # Export results
+    codeforge version                      # Show version
+    codeforge help [COMMAND]               # Detailed help
 """
 
 import sys
-import os
 import asyncio
+import argparse
+import json
 from pathlib import Path
+from datetime import datetime
 
 # Add project root to path
 project_root = Path(__file__).parent

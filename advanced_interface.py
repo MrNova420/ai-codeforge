@@ -15,14 +15,13 @@ from agents.team_collaboration import AgentTeam, get_agent_team
 from agents.universal_agent_interface import UniversalAgent
 from tasks.task_tree import TaskTree, TaskNode
 from messaging.message_bus import get_message_bus
-from performance_optimizer import get_performance_monitor, cached_response
+from performance_optimizer import get_performance_monitor
 from agents.sentinel_agent import SentinelAgent
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.layout import Layout
-from rich.live import Live
 from datetime import datetime
 import asyncio
 

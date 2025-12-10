@@ -4,8 +4,7 @@ Code Analysis Tools - Static analysis, linting, complexity metrics
 Advanced code quality tools for agents
 """
 
-from typing import Dict, List, Optional, Any
-from pathlib import Path
+from typing import Dict, List, Optional
 import subprocess
 import json
 from tools.base_tool import BaseTool, ToolResult
@@ -89,7 +88,8 @@ class LinterTool(BaseTool):
                 try:
                     score = float(line.split()[6].split('/')[0])
                     return score
-                except:
+                except (ValueError, IndexError):
+                    # Failed to parse score
                     pass
         return None
 

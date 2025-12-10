@@ -9,9 +9,8 @@ Provides safe database operations:
 - Data export/import
 """
 
-from typing import List, Dict, Any, Optional
+from typing import Dict, Optional
 from tools.base_tool import BaseTool, ToolResult
-import json
 
 
 class DatabaseQueryTool(BaseTool):

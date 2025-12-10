@@ -9,9 +9,8 @@ Simple usage:
     print(response)
 """
 
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-import json
 
 
 @dataclass
@@ -364,7 +363,8 @@ Be helpful, clear, and actionable in your responses.
                 for mem in memories[:2]:
                     context += f"- {mem['content'][:100]}...\n"
                 return context
-        except:
+        except Exception:
+            # Memory system may not be initialized
             pass
         
         return None
@@ -413,7 +413,8 @@ Be helpful, clear, and actionable in your responses.
                     'type': 'chat_interaction'
                 }
             )
-        except:
+        except Exception:
+            # Memory system may not be available
             pass
     
     def clear_history(self):

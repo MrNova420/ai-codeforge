@@ -13,11 +13,9 @@ Features:
 """
 
 from typing import Dict, List, Optional, Any, Callable
-from functools import lru_cache, wraps
+from functools import wraps
 from datetime import datetime, timedelta
 import hashlib
-import pickle
-from pathlib import Path
 import time
 import threading
 
@@ -261,7 +259,8 @@ class MemoryOptimizer:
             import psutil
             process = psutil.Process()
             return process.memory_info().rss / 1024 / 1024
-        except:
+        except Exception:
+            # psutil may not be installed
             return 0.0
 
 
@@ -311,7 +310,8 @@ class FastStartup:
             try:
                 import rich
                 import yaml
-            except:
+            except Exception:
+                # Modules may not be installed; skip preloading
                 pass
         
         thread = threading.Thread(target=preload, daemon=True)

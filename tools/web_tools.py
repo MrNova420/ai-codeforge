@@ -7,8 +7,6 @@ Advanced web interaction tools for agents
 from typing import Dict, List, Optional, Any
 from tools.base_tool import BaseTool, ToolResult
 import requests
-from urllib.parse import urlencode, urlparse
-import json
 
 
 class HTTPRequestTool(BaseTool):
@@ -39,7 +37,8 @@ class HTTPRequestTool(BaseTool):
             # Try to parse JSON
             try:
                 response_data = response.json()
-            except:
+            except Exception:
+                # Not JSON, use text
                 response_data = response.text
             
             return ToolResult(

@@ -11,7 +11,7 @@ Features:
 - Enterprise-grade coordination
 """
 
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -19,14 +19,9 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 # Import all agent systems
-from agents.universal_agent_interface import UniversalAgent, get_universal_agent
-from agents.team_collaboration import AgentTeam, get_agent_team
+from agents.universal_agent_interface import UniversalAgent
 from agents.enhanced_agent_wrapper import EnhancedAgentWrapper
 from teams.production_team import ProductionTeam
-from security.security_operations import SecurityOpsCenter, get_security_ops
-from research.innovation_lab import InnovationLab, get_innovation_lab
-from design.design_system import DesignStudio, get_design_studio
-from integration.enterprise_hub import EnterpriseHub, get_enterprise_hub
 
 
 class WorkMode(Enum):

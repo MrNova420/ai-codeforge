@@ -12,13 +12,12 @@ Features:
 - Professional deliverables
 """
 
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from agents.team_collaboration import AgentTeam
 from agents.universal_agent_interface import UniversalAgent
 from enum import Enum
-import asyncio
 
 
 class ProjectPhase(Enum):

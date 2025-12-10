@@ -9,13 +9,11 @@ Agents can:
 - Self-organize based on expertise
 """
 
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from agents.universal_agent_interface import UniversalAgent
 from messaging.message_bus import get_message_bus, Event
-import asyncio
-import json
 
 
 @dataclass
@@ -93,7 +91,7 @@ class AgentTeam:
         # Subscribe to messages for this agent
         self.message_bus.subscribe(
             f'agent.message.{name}',
-            lambda event: self._handle_agent_message(event)
+            self._handle_agent_message
         )
     
     async def collaborative_task(

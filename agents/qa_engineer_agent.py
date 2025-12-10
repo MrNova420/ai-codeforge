@@ -333,7 +333,8 @@ def test_error_handling():
                         uncovered_lines=[],
                         covered_files={}
                     )
-            except:
+            except (OSError, ValueError):
+                # JSON file not found or invalid
                 pass
             
             # Fallback: parse terminal output
