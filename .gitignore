@@ -57,3 +57,6 @@ htmlcov/
 # API Keys (if any)
 .env
 secrets.yaml
+
+# Backup files
+*.bak
