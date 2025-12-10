@@ -1,13 +1,32 @@
 # 🤖 AI CodeForge v1.0.0
 
-**Autonomous Multi-Agent AI Development System - Enterprise Edition**
+**Complete AAA-Grade AI Development Team - Production Ready**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](VERSION)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)]()
+[![Ready to Use](https://img.shields.io/badge/ready-100%25-success.svg)]()
 
-> An intelligent, self-learning multi-agent system with 23+ specialized AI agents that autonomously develop software, debug code, and collaborate like a real development team.
+> **Just talk to it!** 23 specialized AI agents working as a complete development team. No code required - describe what you want in plain English and watch it build!
+
+**🎉 NEW: Natural Language Interface** - "I need a login system" → Complete working code!
+
+---
+
+## ⚡ 60-Second Quick Start
+
+```bash
+# 1. Install
+pip install -r requirements.txt
+
+# 2. Start talking!
+./talk "I need a login system for my website"
+```
+
+**That's it!** See [QUICKSTART.md](QUICKSTART.md) for more.
+
+---
 
 ---
 
