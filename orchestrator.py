@@ -25,7 +25,8 @@ console = Console()
 PROJECT_ROOT = Path(__file__).parent
 CONFIG_PATH = PROJECT_ROOT / "config.yaml"
 CONFIG_TEMPLATE = PROJECT_ROOT / "config_template.yaml"
-AGENTS_DIR = PROJECT_ROOT
+# Agent files are in archive/old_docs
+AGENTS_DIR = PROJECT_ROOT / "archive" / "old_docs"
 
 # Agent profile files
 AGENT_FILES = {
