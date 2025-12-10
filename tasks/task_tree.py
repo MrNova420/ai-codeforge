@@ -90,13 +90,10 @@ class TaskNode:
             Progress as float 0.0 to 1.0
         """
         if not self.children:
-            # Leaf task
+            # Leaf task - no subtasks
             return 1.0 if self.status == TaskStatus.COMPLETE else 0.0
         
         # Aggregate children progress
-        if not self.children:
-            return 0.0
-        
         total_progress = sum(child.get_progress() for child in self.children)
         return total_progress / len(self.children)
     

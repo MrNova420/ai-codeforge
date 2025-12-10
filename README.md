@@ -33,7 +33,7 @@
 ### Installation
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/MrNova420/ai-codeforge.git
 cd ai-codeforge
 
