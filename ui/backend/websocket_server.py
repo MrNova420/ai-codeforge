@@ -86,6 +86,97 @@ async def health_check():
     }
 
 
+@app.get("/api/agents")
+async def get_agents_list():
+    """REST API: Get list of all agents."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        agents = unified.list_all_agents()
+        
+        agents_info = []
+        for agent_name in agents:
+            info = unified.get_agent_info(agent_name)
+            agents_info.append({
+                "name": agent_name,
+                "role": info["role"],
+                "specialty": info["specialty"]
+            })
+        
+        return {
+            "agents": agents_info,
+            "total": len(agents),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/features")
+async def get_features_list():
+    """REST API: Get list of all features."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        features = unified.list_all_features()
+        
+        return {
+            "features": features,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/execute")
+async def execute_task_api(request: dict):
+    """REST API: Execute a task."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        task = request.get("task", "")
+        mode = request.get("mode", "auto")
+        agents = request.get("agents")
+        
+        unified = get_unified_interface()
+        result = unified.execute_task(task, mode=mode, agents=agents)
+        
+        return {
+            "task": task,
+            "mode": mode,
+            "result": result,
+            "status": "success",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "task": request.get("task", ""),
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """
@@ -152,6 +243,26 @@ async def handle_client_message(message: dict, websocket: WebSocket):
             "data": status,
             "timestamp": datetime.now().isoformat()
         })
+    
+    elif msg_type == "execute_task":
+        # Execute task using unified interface
+        await handle_task_execution(data, websocket)
+    
+    elif msg_type == "list_agents":
+        # List all available agents
+        await handle_list_agents(websocket)
+    
+    elif msg_type == "list_features":
+        # List all available features
+        await handle_list_features(websocket)
+    
+    elif msg_type == "get_agent_info":
+        # Get info about specific agent
+        await handle_agent_info(data, websocket)
+    
+    elif msg_type == "full_orchestrator":
+        # Activate full orchestrator mode
+        await handle_full_orchestrator(data, websocket)
 
 
 async def get_system_status() -> Dict[str, Any]:
@@ -199,6 +310,194 @@ async def broadcast_system_alert(severity: str, title: str, message: str):
         "message": message,
         "timestamp": datetime.now().isoformat()
     })
+
+
+# Handler functions for unified interface integration
+async def handle_task_execution(data: dict, websocket: WebSocket):
+    """Handle task execution request from webapp."""
+    import sys
+    from pathlib import Path
+    
+    # Add project root to path
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        task = data.get("task", "")
+        mode = data.get("mode", "auto")
+        agents = data.get("agents")
+        
+        # Get unified interface
+        unified = get_unified_interface()
+        
+        # Execute task
+        result = unified.execute_task(task, mode=mode, agents=agents)
+        
+        # Send result back
+        await websocket.send_json({
+            "type": "task_result",
+            "data": {
+                "task": task,
+                "mode": mode,
+                "result": result,
+                "status": "success"
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "task_result",
+            "data": {
+                "task": data.get("task", ""),
+                "status": "error",
+                "error": str(e)
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_list_agents(websocket: WebSocket):
+    """List all available agents."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        agents = unified.list_all_agents()
+        
+        # Get info for each agent
+        agents_info = []
+        for agent_name in agents:
+            info = unified.get_agent_info(agent_name)
+            agents_info.append({
+                "name": agent_name,
+                "role": info["role"],
+                "specialty": info["specialty"]
+            })
+        
+        await websocket.send_json({
+            "type": "agents_list",
+            "data": {
+                "agents": agents_info,
+                "total": len(agents)
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "agents_list",
+            "data": {"error": str(e)},
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_list_features(websocket: WebSocket):
+    """List all available features."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        features = unified.list_all_features()
+        
+        await websocket.send_json({
+            "type": "features_list",
+            "data": {"features": features},
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "features_list",
+            "data": {"error": str(e)},
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_agent_info(data: dict, websocket: WebSocket):
+    """Get information about a specific agent."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        agent_name = data.get("agent_name")
+        unified = get_unified_interface()
+        info = unified.get_agent_info(agent_name)
+        
+        await websocket.send_json({
+            "type": "agent_info",
+            "data": {
+                "agent": agent_name,
+                "info": info
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "agent_info",
+            "data": {"error": str(e)},
+            "timestamp": datetime.now().isoformat()
+        })
+
+
+async def handle_full_orchestrator(data: dict, websocket: WebSocket):
+    """Handle full orchestrator mode activation."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        task = data.get("task", "")
+        unified = get_unified_interface()
+        
+        # Execute in full orchestrator mode
+        result = unified.execute_task(task, mode="full_orchestrator")
+        
+        await websocket.send_json({
+            "type": "full_orchestrator_result",
+            "data": {
+                "task": task,
+                "result": result,
+                "status": "success",
+                "mode": "full_orchestrator"
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        await websocket.send_json({
+            "type": "full_orchestrator_result",
+            "data": {
+                "task": data.get("task", ""),
+                "status": "error",
+                "error": str(e)
+            },
+            "timestamp": datetime.now().isoformat()
+        })
 
 
 # Start server with: uvicorn websocket_server:app --reload
