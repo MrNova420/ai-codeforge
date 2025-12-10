@@ -343,15 +343,17 @@ kill $(lsof -t -i:8000)
 
 ### Feature Not Available
 
-Some features require optional dependencies:
+If you see "feature not available" errors, ensure setup completed successfully:
 
 ```bash
-# For vector memory
-pip install chromadb
+# Re-run setup if needed
+./setup.sh
 
-# For research
-pip install beautifulsoup4 requests-html
+# Verify all dependencies installed
+./venv/bin/python -c "import chromadb, beautifulsoup4; print('✅ All dependencies available')"
 ```
+
+**Note:** All required dependencies (chromadb, beautifulsoup4, requests-html, etc.) are automatically installed by `./setup.sh`. If features are unavailable, setup may not have completed successfully.
 
 ---
 

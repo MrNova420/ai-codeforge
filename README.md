@@ -160,8 +160,9 @@ cd ai-codeforge
 
 **✨ Universal Design:** Works on all devices and Python versions (3.8+). The setup automatically:
 - Creates a virtual environment (solves PEP 668 externally-managed-environment errors)
-- Installs all dependencies
+- Installs ALL dependencies (including chromadb, beautifulsoup4, fastapi, and all required packages)
 - Creates wrapper scripts that auto-use the venv
+- No optional dependencies - everything is included!
 
 **💡 Optional:** Use `source activate.sh` to manually activate the venv for custom commands
 
