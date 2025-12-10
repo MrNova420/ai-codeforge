@@ -63,6 +63,10 @@ class EnhancedOrchestrator:
         # Store agent chats
         self.agent_chats = {}
         
+        # File and memory managers (created once, used by all)
+        self.file_manager = None
+        self.memory_manager = None
+        
         # Collaboration engine (initialized after agents loaded)
         self.collab_engine = None
         self.use_enhanced = settings.ENHANCED_COLLABORATION
@@ -244,25 +248,23 @@ class EnhancedOrchestrator:
         
         console.print("[dim]🚀 Initializing agent team with V3 capabilities...[/dim]")
         
-        # Create enhanced agent chats with V3 features
-        file_manager = FileManager(WORKSPACE_DIR)
+        # Create shared file and memory managers
+        self.file_manager = FileManager(WORKSPACE_DIR)
+        self.memory_manager = MemoryManager(STORAGE_DIR / "conversations")
         code_executor = CodeExecutor(WORKSPACE_DIR)
         
         for name, agent in self.agent_loader.agents.items():
             agent_chat = EnhancedAgentChat(
                 agent,
                 self.config,
-                file_manager=file_manager,
+                file_manager=self.file_manager,
                 code_executor=code_executor
             )
             
-            # Wrap with self-correction if memory available
-            if self.vector_memory:
-                agent_chat = SelfCorrectingAgent(
-                    agent_chat,
-                    memory=self.vector_memory,
-                    max_attempts=3
-                )
+            # NOTE: Do NOT wrap with SelfCorrectingAgent here
+            # SelfCorrectingAgent is for code generation/testing, not chat
+            # It doesn't have a send_message method that collaborations expect
+            # The self-correction happens inside EnhancedAgentChat when needed
             
             self.agent_chats[name] = agent_chat
         
@@ -572,12 +574,12 @@ class EnhancedOrchestrator:
         # Conversation sessions
         console.print("\n[bold cyan]💬 Conversation Sessions:[/bold cyan]")
         
-        if not self.collab_engine:
+        if not self.memory_manager:
             console.print("[dim]No sessions yet (start a collaboration first)[/dim]")
             input("\nPress Enter to continue...")
             return
         
-        sessions = self.collab_engine.memory_manager.list_sessions()
+        sessions = self.memory_manager.list_sessions()
         
         if not sessions:
             console.print("[yellow]No saved conversations yet.[/yellow]")
@@ -613,12 +615,12 @@ class EnhancedOrchestrator:
                 if 0 <= idx < len(sessions):
                     session_id = sessions[idx]['session_id']
                     if Confirm.ask(f"Delete conversation '{sessions[idx]['title']}'?"):
-                        self.collab_engine.memory_manager.delete_session(session_id)
+                        self.memory_manager.delete_session(session_id)
                         console.print("[green]Deleted![/green]")
     
     def _view_session(self, session_id: str):
         """View a conversation session."""
-        session = self.collab_engine.memory_manager.load_session(session_id)
+        session = self.memory_manager.load_session(session_id)
         if not session:
             console.print("[red]Session not found[/red]")
             return
@@ -642,14 +644,19 @@ class EnhancedOrchestrator:
         console.print("\n[bold cyan]Workspace Files[/bold cyan]")
         console.print(f"Location: {WORKSPACE_DIR}\n")
         
-        files = self.collab_engine.file_manager.list_files()
+        if not self.file_manager:
+            console.print("[red]Error: File manager not initialized[/red]")
+            input("\nPress Enter to continue...")
+            return
+        
+        files = self.file_manager.list_files()
         
         if not files:
             console.print("[yellow]Workspace is empty.[/yellow]")
             
             if Confirm.ask("Create example project?"):
                 self._create_example_project()
-                files = self.collab_engine.file_manager.list_files()
+                files = self.file_manager.list_files()
         
         if files:
             for i, file_path in enumerate(files[:30], 1):
@@ -665,7 +672,7 @@ class EnhancedOrchestrator:
     
     def _view_file(self, file_path: str):
         """View a file."""
-        content = self.collab_engine.file_manager.read_file(file_path)
+        content = self.file_manager.read_file(file_path)
         if content:
             console.print(f"\n[bold]{file_path}[/bold]")
             console.print(Panel(content, border_style="cyan"))
@@ -674,7 +681,11 @@ class EnhancedOrchestrator:
     
     def _show_workspace_files(self):
         """Show workspace files inline."""
-        files = self.collab_engine.file_manager.list_files()
+        if not self.file_manager:
+            console.print("[yellow]File manager not initialized[/yellow]")
+            return
+            
+        files = self.file_manager.list_files()
         if files:
             console.print(f"\n[cyan]Workspace files:[/cyan] {', '.join(files[:10])}")
             if len(files) > 10:
@@ -684,7 +695,7 @@ class EnhancedOrchestrator:
     
     def _create_example_project(self):
         """Create example project structure."""
-        self.collab_engine.file_manager.write_file("example.py", """# Example Python file
+        self.file_manager.write_file("example.py", """# Example Python file
 def hello(name):
     return f"Hello, {name}!"
 
@@ -692,7 +703,7 @@ if __name__ == "__main__":
     print(hello("World"))
 """)
         
-        self.collab_engine.file_manager.write_file("README.md", """# Example Project
+        self.file_manager.write_file("README.md", """# Example Project
 
 This is an example project created by the AI Dev Team.
 """)
