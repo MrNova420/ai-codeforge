@@ -57,7 +57,6 @@ def test_unified_interface():
     print("\n🧪 Testing unified interface...")
     
     try:
-        from unified_interface import get_unified_interface
         
         unified = get_unified_interface()
         print("  ✅ Unified interface created")
@@ -92,7 +91,6 @@ def test_orchestrator():
     print("\n🧪 Testing orchestrator...")
     
     try:
-        from orchestrator_v2 import EnhancedOrchestrator
         
         orch = EnhancedOrchestrator()
         print("  ✅ Orchestrator created")
@@ -112,7 +110,6 @@ def test_orchestrator():
         
     except Exception as e:
         print(f"  ❌ Orchestrator failed: {e}")
-        import traceback
         traceback.print_exc()
         return False
 
@@ -137,7 +134,6 @@ def test_webapp_backend():
         
     except Exception as e:
         print(f"  ❌ Webapp backend failed: {e}")
-        import traceback
         traceback.print_exc()
         return False
 
@@ -147,7 +143,6 @@ def test_collaboration_v3():
     print("\n🧪 Testing CollaborationV3...")
     
     try:
-        from collaboration_v3 import CollaborationV3
         print("  ✅ CollaborationV3 imported")
         
         # Don't initialize without agent_chats - just verify it can be imported
@@ -157,7 +152,6 @@ def test_collaboration_v3():
         
     except Exception as e:
         print(f"  ❌ CollaborationV3 failed: {e}")
-        import traceback
         traceback.print_exc()
         return False
 

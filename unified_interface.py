@@ -83,7 +83,6 @@ class UnifiedInterface:
                 self.vector_memory = None
                 
             from memory_manager import MemoryManager
-            from pathlib import Path
             storage_dir = Path.home() / ".ai-codeforge" / "memory"
             storage_dir.mkdir(parents=True, exist_ok=True)
             self.memory_manager = MemoryManager(storage_dir)
@@ -91,7 +90,6 @@ class UnifiedInterface:
             # Import file and code operations
             from file_manager import FileManager
             from code_executor import CodeExecutor
-            from pathlib import Path
             
             workspace_dir = Path.home() / ".ai-codeforge" / "workspace"
             workspace_dir.mkdir(parents=True, exist_ok=True)

@@ -346,7 +346,6 @@ def main():
     
     # Features list
     if command in ["features", "--features"]:
-        from unified_interface import get_unified_interface
         unified = get_unified_interface()
         features = unified.list_all_features()
         
