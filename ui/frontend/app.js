@@ -84,6 +84,7 @@ function getNotificationIcon(type) {
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     initializeNavigation();
+    initializeHeaderButtons();
     populateAgents();
     populateActivityFeed();
     populateTeamStatus();
@@ -118,6 +119,256 @@ function switchView(viewName) {
     views.forEach(view => view.classList.remove('active'));
     document.getElementById(`${viewName}-view`).classList.add('active');
 }
+
+// Header Button Handlers
+function initializeHeaderButtons() {
+    // Notifications button
+    const notificationsBtn = document.getElementById('notifications');
+    if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', showNotificationsPanel);
+    }
+    
+    // Settings button
+    const settingsBtn = document.getElementById('settings');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            switchView('config');
+            // Update nav state
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelector('[data-view="config"]').classList.add('active');
+            document.getElementById('page-title').textContent = 'Configuration';
+        });
+    }
+    
+    // User profile
+    const userProfile = document.querySelector('.user-profile');
+    if (userProfile) {
+        userProfile.addEventListener('click', showUserMenu);
+    }
+}
+
+function showNotificationsPanel() {
+    // Check if panel exists, otherwise create it
+    let panel = document.getElementById('notifications-panel');
+    
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'notifications-panel';
+        panel.className = 'notifications-panel';
+        document.body.appendChild(panel);
+    }
+    
+    // Toggle panel visibility
+    if (panel.classList.contains('active')) {
+        panel.classList.remove('active');
+        return;
+    }
+    
+    // Populate with recent activities
+    const notifications = appState.activities.slice(0, 10);
+    
+    panel.innerHTML = `
+        <div class="panel-header">
+            <h3>🔔 Notifications</h3>
+            <button class="panel-close" onclick="closeNotificationsPanel()">&times;</button>
+        </div>
+        <div class="panel-body">
+            ${notifications.length > 0 ? notifications.map(notif => `
+                <div class="notification-item">
+                    <span class="notification-icon">${notif.icon}</span>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title}</div>
+                        <div class="notification-time">${notif.meta}</div>
+                    </div>
+                </div>
+            `).join('') : '<p class="empty-message">No notifications yet</p>'}
+        </div>
+        <div class="panel-footer">
+            <button class="btn-link" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+    `;
+    
+    panel.classList.add('active');
+}
+
+function closeNotificationsPanel() {
+    const panel = document.getElementById('notifications-panel');
+    if (panel) {
+        panel.classList.remove('active');
+    }
+}
+
+function clearAllNotifications() {
+    appState.activities = [];
+    populateActivityFeed();
+    closeNotificationsPanel();
+    showNotification('success', 'All notifications cleared');
+}
+
+function showUserMenu() {
+    // Check if menu exists, otherwise create it
+    let menu = document.getElementById('user-menu');
+    
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'user-menu';
+        menu.className = 'user-menu';
+        document.body.appendChild(menu);
+        
+        // Position menu near user profile
+        const userProfile = document.querySelector('.user-profile');
+        const rect = userProfile.getBoundingClientRect();
+        menu.style.top = `${rect.bottom + 10}px`;
+        menu.style.right = `20px`;
+    }
+    
+    // Toggle menu visibility
+    if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        return;
+    }
+    
+    // Populate menu
+    menu.innerHTML = `
+        <div class="menu-item" onclick="showUserProfile()">
+            <span>👤</span>
+            <span>Profile</span>
+        </div>
+        <div class="menu-item" onclick="showPreferences()">
+            <span>⚙️</span>
+            <span>Preferences</span>
+        </div>
+        <div class="menu-item" onclick="showSystemInfo()">
+            <span>ℹ️</span>
+            <span>System Info</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="exportData()">
+            <span>💾</span>
+            <span>Export Data</span>
+        </div>
+        <div class="menu-item" onclick="importData()">
+            <span>📥</span>
+            <span>Import Data</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="showAbout()">
+            <span>📖</span>
+            <span>About</span>
+        </div>
+    `;
+    
+    menu.classList.add('active');
+    
+    // Close menu when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', closeUserMenuOnOutsideClick);
+    }, 100);
+}
+
+function closeUserMenuOnOutsideClick(event) {
+    const menu = document.getElementById('user-menu');
+    const userProfile = document.querySelector('.user-profile');
+    
+    if (menu && !menu.contains(event.target) && !userProfile.contains(event.target)) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeUserMenuOnOutsideClick);
+    }
+}
+
+function showUserProfile() {
+    closeUserMenu();
+    showNotification('info', 'User profile feature - Coming soon!');
+}
+
+function showPreferences() {
+    closeUserMenu();
+    switchView('config');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelector('[data-view="config"]').classList.add('active');
+    document.getElementById('page-title').textContent = 'Configuration';
+}
+
+function showSystemInfo() {
+    closeUserMenu();
+    const info = {
+        version: '1.0.0',
+        agents: appState.agents.length,
+        tasks: appState.tasks.length,
+        activities: appState.activities.length,
+        connected: appState.isConnected
+    };
+    
+    showNotification('info', `AI CodeForge v${info.version} | ${info.agents} agents | ${info.tasks} tasks | Status: ${info.connected ? 'Online' : 'Offline'}`);
+}
+
+function exportData() {
+    closeUserMenu();
+    const data = {
+        tasks: appState.tasks,
+        activities: appState.activities,
+        config: appState.config,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ai-codeforge-export-${Date.now()}.json`;
+    a.click();
+    
+    showNotification('success', 'Data exported successfully!');
+}
+
+function importData() {
+    closeUserMenu();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                
+                if (data.tasks) appState.tasks = data.tasks;
+                if (data.activities) appState.activities = data.activities;
+                if (data.config) appState.config = data.config;
+                
+                saveState();
+                populateTasks();
+                populateActivityFeed();
+                loadConfiguration();
+                
+                showNotification('success', 'Data imported successfully!');
+            } catch (error) {
+                showNotification('error', 'Failed to import data: Invalid format');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+function showAbout() {
+    closeUserMenu();
+    showNotification('info', 'AI CodeForge v1.0.0 - AAA Development Team | 23 AI Agents working together');
+}
+
+function closeUserMenu() {
+    const menu = document.getElementById('user-menu');
+    if (menu) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeUserMenuOnOutsideClick);
+    }
+}
+
 
 // WebSocket Connection
 function connectWebSocket() {
