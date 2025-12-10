@@ -6,7 +6,7 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Under Development](https://img.shields.io/badge/status-under--development-orange.svg)]()
-[![Partly Ready to Use](https://img.shields.io/badge/Partly Ready to Use-25-success.svg)]()
+[![Partly Ready to Use](https://img.shields.io/badge/Partly Ready to Use-Partly Ready to Use.svg)]()
 
 > **Just talk to it!** 23 specialized AI agents working as a complete development team. No code required - describe what you want in plain English and watch it build!
 
