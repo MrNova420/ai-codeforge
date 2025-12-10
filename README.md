@@ -30,7 +30,19 @@
 - Ollama (for local LLMs) OR API keys (OpenAI/Gemini)
 ```
 
-### Installation
+### Easy Installation (Recommended)
+
+```bash
+# Clone and setup in one go
+git clone https://github.com/MrNova420/ai-codeforge.git
+cd ai-codeforge
+./setup.sh
+
+# Start using it immediately!
+codeforge
+```
+
+### Manual Installation
 
 ```bash
 # Clone the repository
@@ -40,13 +52,45 @@ cd ai-codeforge
 # Install dependencies
 pip install -r requirements.txt
 
-# Setup (first time - 5-10 min)
-python3 setup_proper.py
+# Make CLI executable
+chmod +x codeforge
 
-# Run (instant after setup)
-python3 start.py
+# Run
+./codeforge              # Interactive CLI (recommended)
+# or: python3 start.py
 # or: ./run
 # or: python3 orchestrator_v2.py
+```
+
+### CLI Commands
+
+```bash
+# Interactive mode
+codeforge                              # Start interactive shell
+
+# Quick commands
+codeforge code "create REST API"       # Generate code
+codeforge test "api.py"                # Generate tests
+codeforge review "src/api.py"          # Review code
+codeforge fix "login bug"              # Fix issue
+codeforge design "checkout flow"       # Design feature
+codeforge security "src/"              # Security audit
+codeforge research "GraphQL"           # Research technology
+codeforge team "build app"             # Full team collaboration
+
+# Team modes
+codeforge team --parallel "task"       # All agents simultaneously
+codeforge team --sequential "task"     # Production pipeline
+codeforge team --collaborative "task"  # Agents discuss & iterate
+codeforge team --autonomous "task"     # Agents self-organize
+
+# Production cycle
+codeforge build "E-commerce Platform"  # Complete 6-phase workflow
+
+# Information
+codeforge help                         # Show all commands
+codeforge agents                       # List all 23 agents
+codeforge status                       # System status
 ```
 
 ---
