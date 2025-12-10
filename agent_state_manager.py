@@ -376,7 +376,6 @@ class StateManager:
         Args:
             keep_last_n: Number of recent states to keep
         """
-        import os
         from pathlib import Path
         
         # Get all saved states
@@ -407,3 +406,7 @@ class StateManager:
             'complete': sum(1 for s in self.active_states.values() if s.status == 'complete'),
             'error': sum(1 for s in self.active_states.values() if s.status == 'error')
         }
+
+
+# Alias for compatibility
+AgentStateManager = StateManager

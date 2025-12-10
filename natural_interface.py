@@ -504,7 +504,6 @@ def chat_mode():
             
             # Check for list agents command
             if any(cmd in user_input.lower() for cmd in ["list agents", "show agents", "all agents", "list all agents"]):
-                from unified_interface import get_unified_interface
                 unified = get_unified_interface()
                 agents = unified.list_all_agents()
                 
@@ -517,7 +516,6 @@ def chat_mode():
             
             # Check for list features command
             if any(cmd in user_input.lower() for cmd in ["list features", "show features", "what can you do", "capabilities"]):
-                from unified_interface import get_unified_interface
                 unified = get_unified_interface()
                 features = unified.list_all_features()
                 
@@ -546,7 +544,6 @@ def chat_mode():
 
 def main():
     """Main entry point."""
-    import sys
     
     # If arguments provided, treat as single command
     if len(sys.argv) > 1:

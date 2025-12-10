@@ -7,8 +7,14 @@ VENV_DIR="$SCRIPT_DIR/venv"
 # Use venv Python if available, otherwise use system Python
 if [ -d "$VENV_DIR" ]; then
     PYTHON="$VENV_DIR/bin/python3"
+    if [ ! -z "$DEBUG" ]; then
+        echo "✅ Using venv: $PYTHON"
+    fi
 else
     PYTHON="python3"
+    if [ ! -z "$DEBUG" ]; then
+        echo "⚠️  No venv at $VENV_DIR, using system Python"
+    fi
 fi
 
 # Run the actual Python script

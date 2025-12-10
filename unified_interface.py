@@ -63,12 +63,9 @@ class UnifiedInterface:
             from orchestrator_v2 import EnhancedOrchestrator
             self.orchestrator = EnhancedOrchestrator()
             
-            # Import collaboration engines
-            from collaboration_v3 import CollaborationV3
-            from collaboration_enhanced import EnhancedCollaboration
-            
-            self.collaboration_v3 = CollaborationV3()
-            self.collaboration_enhanced = EnhancedCollaboration()
+            # Don't initialize collaboration engines directly - let orchestrator handle them
+            # Both CollaborationV3 and EnhancedCollaboration need agent_chats parameter
+            # which the orchestrator creates and manages
             
             # Import agent management
             from orchestrator import AgentLoader
@@ -86,14 +83,19 @@ class UnifiedInterface:
                 self.vector_memory = None
                 
             from memory_manager import MemoryManager
-            self.memory_manager = MemoryManager()
+            storage_dir = Path.home() / ".ai-codeforge" / "memory"
+            storage_dir.mkdir(parents=True, exist_ok=True)
+            self.memory_manager = MemoryManager(storage_dir)
             
             # Import file and code operations
             from file_manager import FileManager
             from code_executor import CodeExecutor
             
-            self.file_manager = FileManager()
-            self.code_executor = CodeExecutor()
+            workspace_dir = Path.home() / ".ai-codeforge" / "workspace"
+            workspace_dir.mkdir(parents=True, exist_ok=True)
+            
+            self.file_manager = FileManager(workspace_dir)
+            self.code_executor = CodeExecutor(workspace_dir)
             
             # Import researcher
             try:
@@ -206,12 +208,30 @@ class UnifiedInterface:
         else:
             console.print("[dim]Auto-selecting best agents for task[/dim]\n")
         
-        # Use collaboration engine
-        if self.collaboration_v3:
-            # Use V3 collaboration
-            return {"status": "team", "task": task, "agents": agents}
+        # Use orchestrator if available
+        if self.orchestrator:
+            # Initialize collaboration agents if not already done
+            if not self.orchestrator.agent_chats:
+                self.orchestrator._init_collaboration_agents()
+            
+            # Execute through collaboration engine
+            if self.orchestrator.collab_engine:
+                result = self.orchestrator.collab_engine.handle_request(task)
+                return {
+                    "status": "success",
+                    "mode": "team",
+                    "task": task,
+                    "agents": agents,
+                    "result": result
+                }
         
-        return {"status": "team_basic", "task": task}
+        return {
+            "status": "pending", 
+            "mode": "team",
+            "task": task,
+            "agents": agents,
+            "message": "Orchestrator not fully initialized. Use ./run for full team mode."
+        }
     
     def _run_solo_agent(self, task: str, agent_name: str) -> Any:
         """Run task with single agent."""
@@ -237,13 +257,14 @@ class UnifiedInterface:
         
         features = {
             "orchestrator": self.orchestrator is not None,
-            "collaboration_v3": hasattr(self, 'collaboration_v3'),
+            "collaboration_v3": (self.orchestrator and self.orchestrator.collab_engine is not None) if self.orchestrator else False,
             "vector_memory": self.vector_memory is not None,
             "researcher": self.researcher is not None,
             "tool_registry": hasattr(self, 'tool_registry'),
             "file_manager": hasattr(self, 'file_manager'),
             "code_executor": hasattr(self, 'code_executor'),
             "memory_manager": hasattr(self, 'memory_manager'),
+            "all_23_agents": self.orchestrator and hasattr(self.orchestrator, 'agent_loader') if self.orchestrator else False,
         }
         
         return features

@@ -10,17 +10,88 @@ const appState = {
     agents: [],
     tasks: [],
     activities: [],
-    config: {}
+    config: {},
+    isConnected: false
 };
+
+// State Persistence
+function saveState() {
+    localStorage.setItem('appState', JSON.stringify({
+        tasks: appState.tasks,
+        activities: appState.activities,
+        config: appState.config
+    }));
+}
+
+function loadState() {
+    const savedState = localStorage.getItem('appState');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            appState.tasks = state.tasks || [];
+            appState.activities = state.activities || [];
+            appState.config = state.config || {};
+            
+            // Restore UI
+            populateTasks();
+            populateActivityFeed();
+        } catch (e) {
+            console.error('Failed to load state:', e);
+        }
+    }
+}
+
+// Notification System
+function showNotification(type, message) {
+    const container = document.getElementById('notification-container') || createNotificationContainer();
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <span class="notification-icon">${getNotificationIcon(type)}</span>
+        <span class="notification-message">${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+function createNotificationContainer() {
+    const container = document.createElement('div');
+    container.id = 'notification-container';
+    container.className = 'notification-container';
+    document.body.appendChild(container);
+    return container;
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    return icons[type] || 'ℹ️';
+}
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    loadState();
     initializeNavigation();
     populateAgents();
     populateActivityFeed();
     populateTeamStatus();
     connectWebSocket();
     loadConfiguration();
+    
+    // Save state periodically
+    setInterval(saveState, 30000); // Save every 30 seconds
 });
 
 // Navigation
@@ -91,9 +162,12 @@ function updateConnectionStatus(isConnected) {
     const statusDot = document.querySelector('.status-dot');
     const statusText = document.querySelector('.status-indicator span:last-child');
     
+    appState.isConnected = isConnected;
+    
     if (isConnected) {
         statusDot.classList.add('online');
         statusText.textContent = 'System Online';
+        showNotification('success', 'Connected to AI CodeForge');
         if (reconnectInterval) {
             clearInterval(reconnectInterval);
             reconnectInterval = null;
@@ -101,6 +175,7 @@ function updateConnectionStatus(isConnected) {
     } else {
         statusDot.classList.remove('online');
         statusText.textContent = 'Reconnecting...';
+        showNotification('warning', 'Connection lost. Reconnecting...');
     }
 }
 
@@ -108,11 +183,17 @@ function handleWebSocketMessage(message) {
     console.log('Message:', message);
     
     switch (message.type) {
+        case 'connected':
+            showNotification('success', 'Connected to AI CodeForge backend');
+            break;
         case 'agent_event':
             handleAgentEvent(message);
             break;
         case 'task_update':
             handleTaskUpdate(message);
+            break;
+        case 'task_result':
+            handleTaskResult(message);
             break;
         case 'system_alert':
             handleSystemAlert(message);
@@ -120,7 +201,22 @@ function handleWebSocketMessage(message) {
         case 'system_status':
             updateSystemStatus(message.data);
             break;
+        case 'code_generated':
+            handleCodeGenerated(message);
+            break;
+        case 'execution_result':
+            handleExecutionResult(message);
+            break;
+        case 'research_result':
+            handleResearchResult(message);
+            break;
+        case 'security_result':
+            handleSecurityResult(message);
+            break;
     }
+    
+    // Save state after each message
+    saveState();
 }
 
 // Agent Management
@@ -223,12 +319,38 @@ function generateCode() {
 
 function runTests() {
     addActivity('🧪', 'Running test suite', 'Just now');
-    alert('Test runner would start here. This connects to the backend agents.');
+    
+    // Send request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Run comprehensive test suite',
+                mode: 'solo',
+                agents: ['quinn']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function codeReview() {
     addActivity('🔍', 'Code review initiated', 'Just now');
-    alert('Code review would start here with Orion agent.');
+    
+    // Send request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Perform comprehensive code review',
+                mode: 'solo',
+                agents: ['orion']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function securityScan() {
@@ -238,7 +360,20 @@ function securityScan() {
 
 function deploy() {
     addActivity('🚀', 'Deployment pipeline started', 'Just now');
-    alert('Deployment would start here with Nova and Zephyr agents.');
+    
+    // Send request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Deploy application to production',
+                mode: 'team',
+                agents: ['nova', 'zephyr']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function research() {
@@ -250,21 +385,28 @@ function research() {
 function generateCodeFromPrompt() {
     const prompt = document.getElementById('code-prompt').value;
     if (!prompt.trim()) {
-        alert('Please enter a task description');
+        showNotification('warning', 'Please enter a task description');
         return;
     }
     
     const editor = document.getElementById('code-editor');
-    editor.value = '// Generating code...\n// This would connect to Felix agent via WebSocket\n// Task: ' + prompt;
+    editor.value = '// Generating code...\n// Waiting for Felix agent response...\n';
     
     addActivity('💻', `Generating: ${prompt}`, 'Just now');
     
-    // In real implementation, send via WebSocket
+    // Send via WebSocket to backend
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
-            type: 'generate_code',
-            data: { prompt: prompt }
+            type: 'execute_task',
+            data: {
+                task: prompt,
+                mode: 'solo',
+                agents: ['felix']
+            }
         }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+        editor.value = '// Error: Backend not connected\n// Please check the WebSocket connection';
     }
 }
 
@@ -272,7 +414,7 @@ function copyCode() {
     const editor = document.getElementById('code-editor');
     editor.select();
     document.execCommand('copy');
-    alert('Code copied to clipboard!');
+    showNotification('success', 'Code copied to clipboard!');
 }
 
 function saveCode() {
@@ -284,11 +426,28 @@ function saveCode() {
     a.download = 'generated_code.txt';
     a.click();
     addActivity('💾', 'Code saved', 'Just now');
+    showNotification('success', 'Code saved successfully!');
 }
 
 function executeCode() {
+    const code = document.getElementById('code-editor').value;
+    if (!code.trim()) {
+        showNotification('warning', 'No code to execute');
+        return;
+    }
+    
     addActivity('⚡', 'Executing code in Docker sandbox', 'Just now');
-    alert('Code would execute in secure Docker container via backend.');
+    
+    // Send code execution request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_code',
+            data: { code: code }
+        }));
+        showNotification('info', 'Code execution started...');
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 // Security Functions
@@ -297,23 +456,43 @@ function runSecurityScan() {
     results.innerHTML = `
         <div style="padding: 2rem;">
             <h4>🔍 Scanning for vulnerabilities...</h4>
-            <p>This would connect to Mira (Security Engineer) to scan the codebase.</p>
+            <p>Mira (Security Engineer) is analyzing the codebase...</p>
             <ul style="margin-top: 1rem; line-height: 2;">
-                <li>✅ OWASP Top 10 scan</li>
-                <li>✅ Dependency vulnerabilities</li>
-                <li>✅ Code security patterns</li>
-                <li>✅ Configuration review</li>
+                <li>⏳ OWASP Top 10 scan</li>
+                <li>⏳ Dependency vulnerabilities</li>
+                <li>⏳ Code security patterns</li>
+                <li>⏳ Configuration review</li>
             </ul>
         </div>
     `;
     addActivity('🔒', 'Security scan in progress', 'Just now');
+    
+    // Send security scan request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Perform comprehensive security audit of the codebase',
+                mode: 'solo',
+                agents: ['mira']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>❌ Connection Error</h4>
+                <p>Cannot connect to backend. Please ensure the server is running.</p>
+            </div>
+        `;
+    }
 }
 
 // Research Functions
 function startResearch() {
     const query = document.getElementById('research-query').value;
     if (!query.trim()) {
-        alert('Please enter a research query');
+        showNotification('warning', 'Please enter a research query');
         return;
     }
     
@@ -321,32 +500,104 @@ function startResearch() {
     results.innerHTML = `
         <div style="padding: 2rem;">
             <h4>🔬 Researching: ${query}</h4>
-            <p>Helix (Research Lead) would analyze this topic and provide insights.</p>
+            <p>Helix (Research Lead) is analyzing this topic...</p>
+            <div style="margin-top: 1rem;">
+                <div class="loading-spinner">⏳</div>
+                <p style="margin-top: 1rem;">Searching web resources...</p>
+            </div>
         </div>
     `;
     
     addActivity('🔬', `Researching: ${query}`, 'Just now');
+    
+    // Send research request to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: `Research and provide comprehensive information about: ${query}`,
+                mode: 'research',
+                agents: ['helix']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>❌ Connection Error</h4>
+                <p>Cannot connect to backend. Please ensure the server is running.</p>
+            </div>
+        `;
+    }
 }
 
 // Design Functions
 function uxDesign() {
     addActivity('🎨', 'UX design started', 'Just now');
-    alert('Pixel (UX Designer) would create user flows and wireframes.');
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Create comprehensive UX design with user flows and wireframes',
+                mode: 'solo',
+                agents: ['pixel']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function uiComponents() {
     addActivity('🎨', 'UI component generation started', 'Just now');
-    alert('Generating UI component library with Pixel.');
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Generate comprehensive UI component library',
+                mode: 'solo',
+                agents: ['pixel']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function accessibilityAudit() {
     addActivity('♿', 'Accessibility audit started', 'Just now');
-    alert('Running WCAG compliance check with Pixel.');
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Perform WCAG compliance check and accessibility audit',
+                mode: 'solo',
+                agents: ['pixel']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 function designSystem() {
     addActivity('🎨', 'Design system generation started', 'Just now');
-    alert('Creating comprehensive design system with Pixel.');
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'execute_task',
+            data: {
+                task: 'Create comprehensive design system with components, tokens, and guidelines',
+                mode: 'solo',
+                agents: ['pixel']
+            }
+        }));
+    } else {
+        showNotification('error', 'Backend not connected. Please check connection.');
+    }
 }
 
 // Configuration
@@ -391,7 +642,15 @@ function saveConfiguration() {
     
     appState.config = config;
     addActivity('⚙️', 'Configuration saved', 'Just now');
-    alert('Configuration saved successfully!');
+    showNotification('success', 'Configuration saved successfully!');
+    
+    // Send config to backend
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'update_config',
+            data: config
+        }));
+    }
 }
 
 // Tasks
@@ -509,3 +768,121 @@ setInterval(() => {
         ws.send(JSON.stringify({ type: 'get_status' }));
     }
 }, 5000);
+
+// New message handlers
+function handleTaskResult(message) {
+    const { data } = message;
+    
+    if (data.status === 'success') {
+        showNotification('success', `Task completed: ${data.task}`);
+        addActivity('✅', `Task completed: ${data.task}`, 'Just now');
+        
+        // Update task if it exists
+        const task = appState.tasks.find(t => t.description === data.task);
+        if (task) {
+            task.status = 'completed';
+            task.result = data.result;
+            populateTasks();
+        }
+    } else {
+        showNotification('error', `Task failed: ${data.error}`);
+        addActivity('❌', `Task failed: ${data.task}`, 'Just now');
+    }
+}
+
+function handleCodeGenerated(message) {
+    const { data } = message;
+    const editor = document.getElementById('code-editor');
+    
+    if (data.code) {
+        editor.value = data.code;
+        showNotification('success', 'Code generated successfully!');
+        addActivity('✅', 'Code generation completed', 'Just now');
+    } else {
+        editor.value = '// Error generating code\n// ' + (data.error || 'Unknown error');
+        showNotification('error', 'Code generation failed');
+    }
+}
+
+function handleExecutionResult(message) {
+    const { data } = message;
+    const editor = document.getElementById('code-editor');
+    
+    if (data.success) {
+        editor.value += '\n\n// Execution Output:\n// ' + (data.output || 'Success');
+        showNotification('success', 'Code executed successfully!');
+        addActivity('✅', 'Code execution completed', 'Just now');
+    } else {
+        editor.value += '\n\n// Execution Error:\n// ' + (data.error || 'Unknown error');
+        showNotification('error', 'Code execution failed');
+    }
+}
+
+function handleResearchResult(message) {
+    const { data } = message;
+    const results = document.getElementById('research-results');
+    
+    if (data.result) {
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>🔬 Research Results</h4>
+                <div style="margin-top: 1rem; white-space: pre-wrap;">${data.result}</div>
+            </div>
+        `;
+        showNotification('success', 'Research completed!');
+        addActivity('✅', 'Research completed', 'Just now');
+    } else {
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>❌ Research Failed</h4>
+                <p>${data.error || 'Unknown error'}</p>
+            </div>
+        `;
+        showNotification('error', 'Research failed');
+    }
+}
+
+function handleSecurityResult(message) {
+    const { data } = message;
+    const results = document.getElementById('security-results');
+    
+    if (data.result) {
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>🔒 Security Scan Results</h4>
+                <div style="margin-top: 1rem; white-space: pre-wrap;">${data.result}</div>
+            </div>
+        `;
+        showNotification('success', 'Security scan completed!');
+        addActivity('✅', 'Security scan completed', 'Just now');
+    } else {
+        results.innerHTML = `
+            <div style="padding: 2rem;">
+                <h4>❌ Security Scan Failed</h4>
+                <p>${data.error || 'Unknown error'}</p>
+            </div>
+        `;
+        showNotification('error', 'Security scan failed');
+    }
+}
+
+// Fetch agents from backend on load
+function fetchAgentsFromBackend() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'list_agents' }));
+    } else {
+        // Fallback to fetch API
+        fetch('http://localhost:8000/api/agents')
+            .then(response => response.json())
+            .then(data => {
+                if (data.agents && data.agents.length > 0) {
+                    // Update with real agent data
+                    appState.agents = data.agents;
+                    populateAgents();
+                }
+            })
+            .catch(error => {
+                console.error('Failed to fetch agents:', error);
+            });
+    }
+}

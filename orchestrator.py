@@ -25,7 +25,8 @@ console = Console()
 PROJECT_ROOT = Path(__file__).parent
 CONFIG_PATH = PROJECT_ROOT / "config.yaml"
 CONFIG_TEMPLATE = PROJECT_ROOT / "config_template.yaml"
-AGENTS_DIR = PROJECT_ROOT
+# Agent files are in archive/old_docs
+AGENTS_DIR = PROJECT_ROOT / "archive" / "old_docs"
 
 # Agent profile files
 AGENT_FILES = {
@@ -236,7 +237,6 @@ class Orchestrator:
     
     def launch_team_mode(self):
         """Launch team mode with Helix overseer."""
-        from agent_chat import TeamChat
         
         console.print("\n[bold cyan]Team Mode[/bold cyan]")
         console.print("[yellow]Launching Helix (Overseer)...[/yellow]")
@@ -255,7 +255,6 @@ class Orchestrator:
     
     def launch_solo_mode(self):
         """Launch individual agent."""
-        from agent_chat import ChatInterface
         
         console.print("\n[bold cyan]Solo Agent Mode[/bold cyan]")
         

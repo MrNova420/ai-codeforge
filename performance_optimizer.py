@@ -102,7 +102,13 @@ class ResponseCache:
     def _calculate_hit_rate(self) -> float:
         """Calculate cache hit rate."""
         # This is simplified - in production would track hits/misses
-        return 0.85  # Placeholder
+        # Calculate actual hit rate from cache hits/misses
+        total_accesses = sum(self.access_count.values())
+        if total_accesses == 0:
+            return 0.0
+        # Estimate hit rate based on access frequency
+        hits = sum(1 for count in self.access_count.values() if count > 1)
+        return hits / len(self.access_count) if self.access_count else 0.0
 
 
 # Global cache instance
@@ -293,7 +299,6 @@ class FastStartup:
     def _minimal_checks() -> None:
         """Minimal critical checks only."""
         # Check Python version
-        import sys
         if sys.version_info < (3, 8):
             print("⚠️  Python 3.8+ recommended")
         
