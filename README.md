@@ -10,23 +10,38 @@
 
 > **Just talk to it!** 23 specialized AI agents working as a complete development team. No code required - describe what you want in plain English and watch it build!
 
-**🎉 NEW: Natural Language Interface** - "I need a login system" → Complete working code!
+**🔥 NEW UPDATES:**
+- ✅ Universal setup - works on ALL devices (Python 3.12+ PEP 668 compliant)
+- ✅ Full integration - ALL features accessible from ANY interface
+- ✅ WebApp with complete REST/WebSocket API
+- ✅ Zero manual activation needed - automatic virtual environment
+
+**📚 Documentation:**
+- **Quick Start:** [QUICKSTART.md](QUICKSTART.md) - Get started in 60 seconds
+- **Complete Docs:** [DOCS_CONSOLIDATED.md](DOCS_CONSOLIDATED.md) - Everything in one place
+- **Beginner Guide:** [GETTING_STARTED.md](GETTING_STARTED.md) - Step-by-step tutorial
+- **WebApp API:** [WEBAPP_API.md](WEBAPP_API.md) - REST & WebSocket reference
 
 ---
 
 ## ⚡ 60-Second Quick Start
 
 ```bash
-# 1. Setup (creates virtual environment automatically)
+# 1. Setup (creates virtual environment automatically - works on ALL devices)
 ./setup.sh
 
-# 2. Start talking! (no activation needed - wrappers handle it)
-./talk "I need a login system for my website"
+# 2. Start using ANY interface - no activation needed!
+./talk "I need a login system for my website"   # Natural language
+./codeforge code "create REST API"               # CLI commands  
+./webapp                                          # Web interface
+./run                                            # Full orchestrator
 ```
 
-**That's it!** Works on all devices, all Python versions.
+**That's it!** Works on all devices, all Python versions (3.8+). Solves PEP 668 errors automatically.
 
 **📖 New to AI CodeForge?** Read [GETTING_STARTED.md](GETTING_STARTED.md) for a complete beginner's guide!
+
+**🔥 NEW:** All features accessible from any interface - unified integration complete!
 
 ---
 
@@ -47,7 +62,9 @@
 
 AI CodeForge offers **4 interfaces** - pick the one that fits your style.
 
-**🔄 Universal Access:** All features (including full orchestrator, 23 agents, advanced capabilities) are accessible from any interface. Choose the UI you prefer, access any feature you need!
+**🔄 FULLY INTEGRATED:** All features (including full orchestrator, 23 agents, V3 advanced capabilities) are accessible from ANY interface through the unified integration layer. Choose the UI you prefer, access any feature you need - no switching required!
+
+**Latest Update:** WebApp now has complete REST API and WebSocket access to entire project. See [WEBAPP_API.md](WEBAPP_API.md).
 
 ### 🌟 1. Talk - Natural Language (Easiest!)
 **Best for:** Everyone, especially beginners

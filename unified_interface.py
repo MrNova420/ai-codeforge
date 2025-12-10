@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 """
 Unified Interface Layer for AI CodeForge
-Makes all features accessible from any entry point
+Makes all features accessible from any entry point (talk, codeforge, webapp, run)
+
+This module provides a central integration point that connects:
+- All 23 AI agents
+- Full orchestrator with V3 advanced features
+- Collaboration engines (V3 JSON-based, enhanced)
+- Memory systems (vector memory, persistent storage)
+- Research capabilities (web search, synthesis)
+- Tool registry and code execution
+- File operations and codebase analysis
+
+Usage:
+    from unified_interface import get_unified_interface
+    
+    unified = get_unified_interface()
+    result = unified.execute_task("create a REST API", mode="team")
+    agents = unified.list_all_agents()
+    features = unified.list_all_features()
 """
 
 import sys
@@ -32,8 +49,11 @@ class UnifiedInterface:
         """
         Initialize all features based on mode.
         
+        This lazy-loads all components on first use to avoid unnecessary imports
+        and ensure the system starts quickly.
+        
         Args:
-            mode: "full" for all features, "lite" for basic features
+            mode: "full" for all features, "lite" for basic features (currently unused)
         """
         if self.features_initialized:
             return
@@ -93,13 +113,21 @@ class UnifiedInterface:
         """
         Execute any task using appropriate features.
         
+        This is the main entry point for task execution from any interface.
+        Automatically detects the best execution mode if mode="auto".
+        
         Args:
-            task: Natural language task description
-            mode: "auto", "solo", "team", "research", "full_orchestrator"
-            agents: Optional list of specific agents to use
+            task: Natural language task description (e.g., "create a REST API")
+            mode: Execution mode:
+                - "auto": Auto-detect best mode based on task keywords
+                - "solo": Single agent execution
+                - "team": Multi-agent collaboration (default for most tasks)
+                - "research": Research-focused with web search
+                - "full_orchestrator": All 23 agents + V3 advanced features
+            agents: Optional list of specific agent names to use (e.g., ["felix", "sol"])
             
         Returns:
-            Task result
+            Task result dictionary with status, mode, and execution details
         """
         self.initialize()
         
