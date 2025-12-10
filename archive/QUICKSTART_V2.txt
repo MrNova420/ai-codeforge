@@ -1,0 +1,66 @@
+═══════════════════════════════════════════════════════════════════
+               ULTIMATE AI DEV TEAM V2 - QUICK START
+═══════════════════════════════════════════════════════════════════
+
+🚀 LAUNCH IN 3 STEPS:
+
+1. Go to directory:
+   cd /home/mrnova420/ai-dev-team
+
+2. First time? Configure:
+   ./setup
+
+3. Launch V2:
+   ./start_v2.sh
+
+DONE! 🎉
+
+═══════════════════════════════════════════════════════════════════
+
+📖 NEW TO V2? READ THESE IN ORDER:
+
+1. START_HERE_V2.md      (Quick overview)
+2. V2_QUICKSTART.md      (5-minute tutorial)
+3. V2_FEATURES.md        (All features explained)
+
+═══════════════════════════════════════════════════════════════════
+
+✨ WHAT'S NEW IN V2:
+
+✓ Real multi-agent collaboration (not simulated!)
+✓ Persistent memory (conversations saved)
+✓ File operations (agents can read/write code)
+✓ Code execution (Python, JS, Bash)
+✓ Streaming responses (real-time output)
+✓ Progress dashboard (visual status)
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 EXAMPLE: BUILD AN APP
+
+./start_v2.sh
+→ Select: 1 (Team Collaboration)
+→ Type: "Create a Flask web app with authentication"
+→ Watch agents work together
+→ Check workspace/ for files
+
+═══════════════════════════════════════════════════════════════════
+
+❓ HELP:
+
+Problem: "No config found"
+Fix: Run ./setup
+
+Problem: "No API key"
+Fix: Run ./setup and add key (or use free local models)
+
+Problem: "Module not found"
+Fix: pip install -r requirements.txt
+
+═══════════════════════════════════════════════════════════════════
+
+              🎊 START BUILDING NOW! 🎊
+
+                  ./start_v2.sh
+
+═══════════════════════════════════════════════════════════════════

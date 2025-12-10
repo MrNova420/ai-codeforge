@@ -1,0 +1,28 @@
+openai_api_key: ''
+gemini_api_key: ''
+ollama_url: http://localhost:11434
+ollama_model: mistral:7b
+agent_models:
+  helix: mistral:7b
+  aurora: mistral:7b
+  felix: mistral:7b
+  sage: mistral:7b
+  ember: mistral:7b
+  orion: mistral:7b
+  atlas: mistral:7b
+  mira: mistral:7b
+  vex: mistral:7b
+  sol: mistral:7b
+  echo: mistral:7b
+  nova: mistral:7b
+  quinn: mistral:7b
+  blaze: mistral:7b
+  ivy: mistral:7b
+  zephyr: mistral:7b
+  pixel: mistral:7b
+  script: mistral:7b
+  turbo: mistral:7b
+  sentinel: mistral:7b
+  link: mistral:7b
+  patch: mistral:7b
+  pulse: mistral:7b

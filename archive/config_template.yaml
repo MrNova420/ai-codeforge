@@ -1,0 +1,40 @@
+# Ultimate AI Dev Team: Configuration
+
+# Copy this file to config.yaml and fill in your API keys and preferences.
+
+openai_api_key: "YOUR_OPENAI_API_KEY_HERE"
+gemini_api_key: "YOUR_GEMINI_API_KEY_HERE"
+
+# Local model settings (Ollama)
+ollama_url: "http://localhost:11434"
+ollama_model: "llama2"  # Options: llama2, codellama, mistral, etc.
+
+# Default model for each agent (can be 'openai', 'gemini', or 'local')
+agent_models:
+  aurora: openai
+  felix: openai
+  sage: gemini
+  ember: gemini
+  orion: openai
+  atlas: openai
+  mira: openai
+  vex: openai
+  sol: openai
+  echo: openai
+  nova: openai
+  quinn: openai
+  blaze: openai
+  ivy: openai
+  zephyr: openai
+  pixel: openai
+  script: openai
+  turbo: openai
+  sentinel: openai
+  link: openai
+  patch: openai
+  pulse: openai
+  helix: openai
+
+# You can change any agent to use 'gemini' or 'local' as needed.
+
+# Add more config options as needed for your team.

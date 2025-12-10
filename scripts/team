@@ -1,0 +1,15 @@
+#!/bin/bash
+# Wrapper script for the ai-dev-team CLI
+
+# Get the directory where this script resides
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
+
+# Activate the virtual environment
+source "$PROJECT_ROOT/venv/bin/activate"
+
+# Execute the Python package's main function
+# We can just call `python -m ai_dev_team.main` if the project is installed
+# Or, if installed via `pip install -e .`, we can use `team` directly
+# For now, let's call the python module explicitly, ensuring it uses the venv python
+python -m ai_dev_team.main "$@"

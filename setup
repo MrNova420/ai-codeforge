@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""
+Ultimate AI Dev Team - One-Command Setup
+Run this to set up everything!
+"""
+
+import subprocess
+import sys
+import os
+
+def main():
+    print("╔══════════════════════════════════════════════════════════════╗")
+    print("║                                                              ║")
+    print("║         Ultimate AI Dev Team - Quick Setup                  ║")
+    print("║                                                              ║")
+    print("╚══════════════════════════════════════════════════════════════╝")
+    print()
+    
+    # Check if in correct directory
+    if not os.path.exists("orchestrator.py"):
+        print("❌ Please run this from the ai-dev-team directory")
+        sys.exit(1)
+    
+    # Install dependencies
+    print("📦 Installing dependencies...")
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", "requirements.txt"], check=True)
+        print("✅ Dependencies installed")
+    except:
+        print("⚠️  Some dependencies may have failed. Continuing anyway...")
+    
+    print()
+    
+    # Run setup wizard
+    print("🎨 Launching interactive setup wizard...")
+    print()
+    subprocess.run([sys.executable, "setup_wizard.py"])
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,28 @@
+openai_api_key: ''
+gemini_api_key: ''
+ollama_url: http://localhost:11434
+ollama_model: codellama:7b
+agent_models:
+  helix: codellama:7b
+  aurora: codellama:7b
+  felix: codellama:7b
+  sage: codellama:7b
+  ember: codellama:7b
+  orion: codellama:7b
+  atlas: codellama:7b
+  mira: codellama:7b
+  vex: codellama:7b
+  sol: codellama:7b
+  echo: codellama:7b
+  nova: codellama:7b
+  quinn: codellama:7b
+  blaze: codellama:7b
+  ivy: codellama:7b
+  zephyr: codellama:7b
+  pixel: codellama:7b
+  script: codellama:7b
+  turbo: codellama:7b
+  sentinel: codellama:7b
+  link: codellama:7b
+  patch: codellama:7b
+  pulse: codellama:7b
