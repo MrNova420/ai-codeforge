@@ -608,16 +608,6 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
             "data": {"error": error_msg},
             "timestamp": datetime.now().isoformat()
         })
-        await websocket.send_json({
-            "type": "task_update",
-            "data": {
-                "task": task,
-                "status": "started",
-                "progress": 0
-            },
-            "timestamp": datetime.now().isoformat()
-        })
-        
         # Execute task
         result = unified.execute_task(task, mode=mode, agents=agents)
         

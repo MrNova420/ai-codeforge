@@ -192,8 +192,8 @@ class WebappAdapter:
             if hasattr(agent_chat, 'get_agent_stats'):
                 try:
                     stats[agent_name] = agent_chat.get_agent_stats()
-                except:
-                    pass
+                except (AttributeError, TypeError, Exception):
+                    pass  # Skip agents without functioning stats method
         
         return stats
     

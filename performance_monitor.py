@@ -18,6 +18,10 @@ except ImportError:
     PSUTIL_AVAILABLE = False
 
 
+# Constants
+SECONDS_PER_MINUTE = 60
+
+
 @dataclass
 class PerformanceMetric:
     """Represents a single performance metric."""
@@ -157,7 +161,7 @@ class PerformanceMonitor:
             'min_duration': min(durations),
             'max_duration': max(durations),
             'total_time': sum(durations),
-            'throughput': len(durations) / ((time.time() - self.start_time) / 60)  # tasks/minute
+            'throughput': len(durations) / ((time.time() - self.start_time) / SECONDS_PER_MINUTE)  # tasks/minute
         }
     
     def get_system_stats(self) -> Dict[str, Any]:
@@ -190,7 +194,7 @@ class PerformanceMonitor:
                 'uptime_formatted': str(timedelta(seconds=int(uptime))),
                 'total_tasks': total_tasks,
                 'avg_task_duration': sum(all_durations) / len(all_durations) if all_durations else 0.0,
-                'throughput': total_tasks / (uptime / 60) if uptime > 0 else 0.0,  # tasks/minute
+                'throughput': total_tasks / (uptime / SECONDS_PER_MINUTE) if uptime > 0 else 0.0,  # tasks/minute
                 'active_alerts': len([a for a in self.alerts if not a.get('acknowledged', False)])
             }
             

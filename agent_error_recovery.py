@@ -149,6 +149,7 @@ class AgentErrorRecovery:
                     break
         
         # Try fallback agents
+        fallback_list = []
         if fallback_agents or specialty:
             fallback_list = fallback_agents or self._get_fallback_agents(
                 agent_name, specialty
@@ -190,7 +191,7 @@ class AgentErrorRecovery:
             'error': str(last_error),
             'agent': agent_name,
             'recovery_attempted': True,
-            'attempts': self.max_retries + len(fallback_list if fallback_agents or specialty else [])
+            'attempts': self.max_retries + len(fallback_list)
         }
     
     def _classify_error(self, error: Exception) -> ErrorSeverity:
