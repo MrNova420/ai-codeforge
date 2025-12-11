@@ -27,6 +27,7 @@ from security.security_operations import get_security_ops
 from research.innovation_lab import get_innovation_lab
 from design.design_system import get_design_studio
 from integration.enterprise_hub import get_enterprise_hub
+from prompts_utils import build_actionable_task_prompt
 
 
 class WorkMode(Enum):
@@ -435,12 +436,19 @@ class MasterOrchestrator:
         }
     
     async def _execute_agent_task(self, agent: Any, assignment: AgentAssignment) -> str:
-        """Execute a single agent task."""
+        """Execute a single agent task with action-oriented prompting."""
         try:
+            # Use shared utility for consistent actionable prompts
+            actionable_task = build_actionable_task_prompt(
+                task_description=assignment.task,
+                agent_role=assignment.role,
+                additional_context="Focus on your specialty and provide production-ready solutions."
+            )
+            
             if hasattr(agent, 'execute'):
-                result = await agent.execute(assignment.task)
+                result = await agent.execute(actionable_task)
             else:
-                result = agent(assignment.task)
+                result = agent(actionable_task)
             return str(result)
         except Exception as e:
             return f"Error: {str(e)}"

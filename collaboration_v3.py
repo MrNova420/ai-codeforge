@@ -6,6 +6,7 @@ Merged ALL features from simple, enhanced, engine, and v3:
 - Enhanced: Real-time progress tracking, live updates
 - Engine: Task management, file operations, code execution
 - V3: JSON parsing, parallel execution, AgentManager threading
+- Recovery: Automatic error handling and agent fallbacks
 
 This is the ONE TRUE collaboration engine with everything integrated.
 """
@@ -22,6 +23,12 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from agent_manager import AgentManager, AgentResponse
+from prompts_utils import (
+    build_actionable_task_prompt, 
+    build_enhanced_task_prompt, 
+    build_delegation_prompt,
+    SCROLL_HINT_THRESHOLD
+)
 
 console = Console()
 
@@ -66,7 +73,8 @@ class CollaborationV3:
     9. File operations integration (engine)
     10. Code execution support (engine)
     11. Dependency graph management (v3)
-    12. Error handling & recovery (all)
+    12. Error handling & recovery (NEW)
+    13. Automatic retry with fallbacks (NEW)
     """
     
     def __init__(self, agent_chats: Dict):
@@ -76,14 +84,73 @@ class CollaborationV3:
         self.tasks: List[Task] = []
         self.current_phase = "Planning"
         self.agent_statuses = {}  # track agent status
+        self.activity_log = []  # Comprehensive activity logging
+        self.task_history = []  # History of all task summaries
+        
+        # Initialize error recovery
+        from agent_error_recovery import get_error_recovery
+        self.error_recovery = get_error_recovery()
         
         # Initialize agent statuses
         for name in agent_chats.keys():
             self.agent_statuses[name] = {
                 'status': 'idle',
                 'current_task': None,
-                'last_active': datetime.now().isoformat()
+                'last_active': datetime.now().isoformat(),
+                'errors': 0,
+                'recovered': 0
             }
+        
+        self._log_activity("System", "Collaboration engine initialized with error recovery", "info")
+    
+    def _log_activity(self, source: str, message: str, level: str = "info"):
+        """Log activity to comprehensive activity feed."""
+        activity = {
+            'timestamp': datetime.now().isoformat(),
+            'source': source,
+            'message': message,
+            'level': level  # info, warning, error, success
+        }
+        self.activity_log.append(activity)
+        
+        # Also print to console for real-time feedback
+        level_colors = {
+            'info': 'blue',
+            'warning': 'yellow',
+            'error': 'red',
+            'success': 'green'
+        }
+        color = level_colors.get(level, 'white')
+        timestamp = activity['timestamp'].split('T')[1][:8]
+    
+    def show_activity_feed(self, limit: int = 20):
+        """Display the activity feed."""
+        console.print("\n[bold cyan]📊 Activity Feed[/bold cyan]")
+        
+        recent_activities = self.activity_log[-limit:] if len(self.activity_log) > limit else self.activity_log
+        
+        for activity in recent_activities:
+            timestamp = activity['timestamp'].split('T')[1][:8]
+            level = activity['level']
+            icon = {'info': 'ℹ️', 'warning': '⚠️', 'error': '❌', 'success': '✅'}.get(level, '•')
+            console.print(f"[dim]{timestamp}[/dim] {icon} [cyan]{activity['source']}:[/cyan] {activity['message']}")
+        
+        console.print(f"\n[dim]Total activities: {len(self.activity_log)} | Showing last {len(recent_activities)}[/dim]")
+    
+    def get_error_report(self) -> Dict[str, Any]:
+        """Get comprehensive error and recovery report."""
+        return {
+            'recovery_system': self.error_recovery.get_error_report(),
+            'recovery_rate': self.error_recovery.get_recovery_rate(),
+            'agent_errors': {
+                agent: {
+                    'total_errors': status.get('errors', 0),
+                    'recovered': status.get('recovered', 0),
+                    'success_rate': 1 - (status.get('errors', 0) / max(status.get('errors', 0) + status.get('recovered', 0), 1))
+                }
+                for agent, status in self.agent_statuses.items()
+            }
+        }
     
     # ========== MAIN ENTRY POINT ==========
     
@@ -99,7 +166,10 @@ class CollaborationV3:
         Returns:
             Dict with plan, tasks, results, and summary
         """
+        self._log_activity("System", f"Received request: {user_request[:50]}...", "info")
+        
         if not self.overseer:
+            self._log_activity("System", "Overseer not available", "error")
             return self._error_response("Helix (Overseer) not available")
         
         # Auto-detect complexity
@@ -110,6 +180,8 @@ class CollaborationV3:
                 mode = 'parallel'
             else:
                 mode = 'enhanced'
+        
+        self._log_activity("System", f"Selected mode: {mode}", "info")
         
         # Route to appropriate handler
         if mode == 'simple':
@@ -165,18 +237,25 @@ Keep it concise and helpful."""
     
     def _handle_enhanced(self, user_request: str, timeout: int) -> Dict:
         """Enhanced mode - full delegation with real-time progress."""
+        self._log_activity("Enhanced Mode", "Starting enhanced mode execution", "info")
         console.print("\n[bold cyan]🎯 Analyzing Request...[/bold cyan]")
         
         # Phase 1: Get plan from overseer
+        self._log_activity("Helix", "Analyzing request and creating plan", "info")
         plan = self._get_enhanced_plan(user_request, timeout=60)
         if plan.startswith("Error:"):
+            self._log_activity("Helix", "Failed to create plan", "error")
             return self._error_response(plan)
+        
+        self._log_activity("Helix", f"Plan created with {len(plan)} chars", "success")
         
         # Phase 2: Parse and assign tasks
         console.print("\n[bold cyan]📋 Creating Task Assignments...[/bold cyan]")
         self._parse_enhanced_tasks(plan)
+        self._log_activity("System", f"Parsed {len(self.tasks)} tasks from plan", "info")
         
         if not self.tasks:
+            self._log_activity("System", "No tasks parsed, using direct response", "warning")
             return {
                 'mode': 'enhanced',
                 'plan': plan,
@@ -185,12 +264,17 @@ Keep it concise and helpful."""
                 'summary': plan
             }
         
+        # Log task assignments
+        for task in self.tasks:
+            self._log_activity("System", f"Assigned task to {task.agent}: {task.description[:50]}...", "info")
+        
         # Phase 3: Execute with live progress
         console.print(f"\n[bold cyan]⚡ Executing {len(self.tasks)} Tasks...[/bold cyan]")
         results = self._execute_with_live_progress(timeout)
         
         # Phase 4: Summarize
         summary = self._create_summary(results)
+        self._log_activity("System", "All tasks completed, summary created", "success")
         
         return {
             'mode': 'enhanced',
@@ -202,20 +286,10 @@ Keep it concise and helpful."""
     
     def _get_enhanced_plan(self, user_request: str, timeout: int) -> str:
         """Get delegation plan from overseer (enhanced style)."""
-        prompt = f"""You are Helix, team overseer. Break down this request into agent tasks.
-
-REQUEST: {user_request}
-
-You MUST delegate to the team. Respond EXACTLY in this format:
-
-AGENTS NEEDED:
-- aurora: [task for frontend/UI work]
-- felix: [task for Python/backend]
-- pixel: [task for design/styling]
-
-Available agents: aurora, felix, sage, ember, orion, atlas, mira, vex, sol, echo, nova, quinn, blaze, ivy, zephyr, pixel, script, turbo, sentinel, link, patch, pulse, helix
-
-Pick 2-4 relevant agents and assign specific tasks. Be concise."""
+        # Dynamically get available agents from agent_chats
+        available_agents = list(self.agent_chats.keys())
+        # Use shared delegation prompt utility with actual available agents
+        prompt = build_delegation_prompt(user_request, available_agents)
         
         try:
             response = self.overseer.send_message(prompt, stream=False)
@@ -251,8 +325,9 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
                             ))
     
     def _execute_with_live_progress(self, timeout: int) -> Dict:
-        """Execute tasks with live progress bars (from enhanced)."""
+        """Execute tasks with live progress bars and detailed status tracking."""
         results = {}
+        task_summaries = []  # Store detailed task summaries
         
         with Progress(
             SpinnerColumn(),
@@ -277,41 +352,108 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
                 task_id = progress_tasks[task.agent]
                 agent = self.agent_chats.get(task.agent)
                 
+                # Create task summary box
+                task_summary = {
+                    'agent': task.agent,
+                    'task': task.description,
+                    'status': 'starting',
+                    'start_time': datetime.now().isoformat(),
+                    'result': None,
+                    'duration': 0
+                }
+                
                 if not agent:
                     task.status = "error"
                     task.result = f"Agent {task.agent} not found"
                     progress.update(task_id, completed=100, description="[red]Not found[/red]")
+                    task_summary['status'] = 'error'
+                    task_summary['result'] = task.result
+                    task_summaries.append(task_summary)
+                    self._log_activity(task.agent, "Agent not found", "error")
                     continue
                 
                 task.status = "running"
                 task.start_time = time.time()
                 self.agent_statuses[task.agent]['status'] = 'busy'
                 self.agent_statuses[task.agent]['current_task'] = task.task_id
-                progress.update(task_id, completed=10, description="[yellow]Working...[/yellow]")
+                
+                self._log_activity(task.agent, f"Starting task: {task.description[:50]}...", "info")
+                progress.update(task_id, completed=10, description="[yellow]⏳ Analyzing...[/yellow]")
+                task_summary['status'] = 'analyzing'
                 
                 try:
-                    progress.update(task_id, completed=30, description="[cyan]Generating...[/cyan]")
-                    result = agent.send_message(task.description, stream=False)
+                    progress.update(task_id, completed=30, description="[cyan]💭 Thinking...[/cyan]")
+                    task_summary['status'] = 'thinking'
+                    self._log_activity(task.agent, "Processing request...", "info")
+                    
+                    progress.update(task_id, completed=50, description="[cyan]🔨 Generating...[/cyan]")
+                    task_summary['status'] = 'generating'
+                    self._log_activity(task.agent, "Generating response...", "info")
+                    
+                    # Use shared utility for actionable prompts
+                    actionable_prompt = build_enhanced_task_prompt(task.description)
+                    
+                    result = agent.send_message(actionable_prompt, stream=False)
                     
                     task.status = "complete"
                     task.result = result
                     task.end_time = time.time()
+                    duration = task.end_time - task.start_time
                     results[task.agent] = result
+                    
                     self.agent_statuses[task.agent]['status'] = 'idle'
                     self.agent_statuses[task.agent]['current_task'] = None
                     self.agent_statuses[task.agent]['last_active'] = datetime.now().isoformat()
                     
-                    progress.update(task_id, completed=100, description="[green]Complete ✓[/green]")
+                    task_summary['status'] = 'complete'
+                    task_summary['result'] = result
+                    task_summary['duration'] = f"{duration:.1f}s"
+                    task_summary['result_length'] = len(str(result))
+                    
+                    self._log_activity(task.agent, f"Task completed in {duration:.1f}s ({len(str(result))} chars)", "success")
+                    progress.update(task_id, completed=100, description=f"[green]✅ Complete ({duration:.1f}s)[/green]")
+                    
+                    # Show individual agent summary box after completion
+                    self._show_agent_summary(task.agent, task_summary)
                     
                 except Exception as e:
                     task.status = "error"
                     task.result = f"Error: {str(e)}"
                     task.end_time = time.time()
+                    duration = task.end_time - task.start_time
                     results[task.agent] = task.result
                     self.agent_statuses[task.agent]['status'] = 'idle'
-                    progress.update(task_id, completed=100, description=f"[red]Error[/red]")
+                    
+                    task_summary['status'] = 'error'
+                    task_summary['result'] = task.result
+                    task_summary['duration'] = f"{duration:.1f}s"
+                    
+                    self._log_activity(task.agent, f"Task failed: {str(e)}", "error")
+                    progress.update(task_id, completed=100, description=f"[red]❌ Error[/red]")
+                
+                task_summaries.append(task_summary)
+        
+        # Store task summaries for history
+        self.task_history = task_summaries
         
         return results
+    
+    def _show_agent_summary(self, agent_name: str, task_summary: Dict):
+        """Display a summary box for a completed agent task."""
+        status_icon = "✅" if task_summary['status'] == 'complete' else "❌"
+        status_color = "green" if task_summary['status'] == 'complete' else "red"
+        
+        summary_text = f"""[{status_color}]{status_icon} Status:[/{status_color}] {task_summary['status']}
+[cyan]⏱️  Duration:[/cyan] {task_summary.get('duration', 'N/A')}
+[cyan]📝 Task:[/cyan] {task_summary['task'][:80]}{'...' if len(task_summary['task']) > 80 else ''}
+[cyan]📊 Result Length:[/cyan] {task_summary.get('result_length', 0)} chars"""
+        
+        console.print(Panel(
+            summary_text,
+            title=f"[bold cyan]📦 {agent_name.capitalize()} - Task Summary[/bold cyan]",
+            border_style=status_color,
+            subtitle=f"[dim]{task_summary['start_time'].split('T')[1][:8]}[/dim]"
+        ))
     
     # ========== PARALLEL MODE (from collaboration_v3.py) ==========
         
@@ -589,21 +731,32 @@ JSON:"""
         }
     
     def render_results(self, response: Dict):
-        """Render the results to console."""
+        """Render the results to console with full output and better formatting."""
         # Show summary
         if response.get('summary'):
             console.print(Panel(
                 response['summary'],
-                title="[cyan]Summary[/cyan]",
+                title="[cyan]📊 Summary[/cyan]",
                 border_style="cyan"
             ))
         
-        # Show individual results
+        # Show individual results with full content
         for agent, result in response.get('results', {}).items():
+            # Format the result content with line numbers for long outputs
+            result_str = str(result)
+            
+            # Add scrolling hint for very long outputs (using constant)
+            if len(result_str) > SCROLL_HINT_THRESHOLD:
+                hint = f"\n\n[dim]ℹ️  Response length: {len(result_str)} chars | Scroll to view all content[/dim]"
+                display_content = result_str + hint
+            else:
+                display_content = result_str
+            
             console.print(Panel(
-                result[:500] + ("..." if len(result) > 500 else ""),
-                title=f"[cyan]{agent.capitalize()}[/cyan]",
-                border_style="cyan"
+                display_content,
+                title=f"[cyan]🤖 {agent.capitalize()}[/cyan]",
+                border_style="cyan",
+                subtitle=f"[dim]{len(result_str)} chars[/dim]"
             ))
     
     # ========== ADDITIONAL METHODS FROM ENGINE ==========
@@ -661,23 +814,38 @@ JSON:"""
         return task
     
     def execute_single_agent_task(self, agent_name: str, task: Task) -> str:
-        """Execute a task with the assigned agent (from engine)."""
+        """Execute a task with the assigned agent with enhanced capabilities."""
         if agent_name not in self.agent_chats:
             return "Error: Agent not found"
         
         agent_chat = self.agent_chats[agent_name]
         
-        context = f"""You are working on the following task:
-
-Task: {task.description}
-Priority: {task.priority.value}
-
-You have access to:
+        # Enhanced prompt using shared utility with full context
+        additional_context = f"""You have access to:
 - File operations (read, write, list files)
 - Code execution (Python, JavaScript, Bash)
 - Previous conversation context
+- Your specialized skills and knowledge
 
-Please provide your solution or response."""
+WORK STYLE:
+1. First, analyze what needs to be done
+2. Break it down into concrete steps
+3. IMPLEMENT each step with actual code/content
+4. Test your implementation mentally
+5. Provide the complete, working solution
+
+QUALITY STANDARDS:
+- Code must be production-ready
+- Include error handling
+- Add comments for complex logic
+- Follow best practices for the language/framework
+- Make it maintainable and extensible"""
+        
+        context = build_actionable_task_prompt(
+            task_description=task.description,
+            priority=task.priority.value,
+            additional_context=additional_context
+        )
         
         try:
             task.status = "running"

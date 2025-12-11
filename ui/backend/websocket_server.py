@@ -185,6 +185,119 @@ async def execute_task_api(request: dict):
         }
 
 
+@app.get("/api/activity")
+async def get_activity_feed():
+    """REST API: Get activity feed from collaboration engine."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        activity_feed = []
+        
+        # Try to get activity from orchestrator's collaboration engine
+        if hasattr(unified, 'orchestrator') and unified.orchestrator:
+            if hasattr(unified.orchestrator, 'collab_engine') and unified.orchestrator.collab_engine:
+                collab = unified.orchestrator.collab_engine
+                if hasattr(collab, 'activity_log'):
+                    activity_feed = collab.activity_log[-50:]  # Last 50 activities
+        
+        return {
+            "activity_feed": activity_feed,
+            "count": len(activity_feed),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+@app.get("/api/agent-stats")
+async def get_agent_statistics():
+    """REST API: Get statistics for all agents."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        agent_stats = {}
+        
+        # Try to get stats from agent_chats
+        if hasattr(unified, 'orchestrator') and unified.orchestrator:
+            if hasattr(unified.orchestrator, 'agent_chats') and unified.orchestrator.agent_chats:
+                for agent_name, agent_chat in unified.orchestrator.agent_chats.items():
+                    if hasattr(agent_chat, 'get_agent_stats'):
+                        try:
+                            agent_stats[agent_name] = agent_chat.get_agent_stats()
+                        except:
+                            pass
+        
+        return {
+            "agent_stats": agent_stats,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+@app.get("/api/task-history")
+async def get_task_history():
+    """REST API: Get task execution history."""
+    import sys
+    from pathlib import Path
+    
+    project_root = Path(__file__).parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    try:
+        from unified_interface import get_unified_interface
+        
+        unified = get_unified_interface()
+        task_history = []
+        
+        # Try to get history from collaboration engine
+        if hasattr(unified, 'orchestrator') and unified.orchestrator:
+            if hasattr(unified.orchestrator, 'collab_engine') and unified.orchestrator.collab_engine:
+                collab = unified.orchestrator.collab_engine
+                if hasattr(collab, 'task_history'):
+                    task_history = collab.task_history
+        
+        return {
+            "task_history": task_history,
+            "count": len(task_history),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """
@@ -401,7 +514,7 @@ async def broadcast_system_alert(severity: str, title: str, message: str):
 
 # Handler functions for unified interface integration
 async def handle_task_execution(data: dict, websocket: WebSocket):
-    """Handle task execution request from webapp."""
+    """Handle task execution request from webapp with enhanced logging."""
     import sys
     from pathlib import Path
     
@@ -422,15 +535,79 @@ async def handle_task_execution(data: dict, websocket: WebSocket):
         
         # Send initial status
         await websocket.send_json({
-            "type": "task_update",
+            "type": "task_started",
             "data": {
                 "task": task,
-                "status": "started",
-                "progress": 0
+                "mode": mode,
+                "agents": agents
             },
             "timestamp": datetime.now().isoformat()
         })
         
+        # Broadcast to all clients
+        await manager.broadcast({
+            "type": "task_started",
+            "data": {
+                "task": task,
+                "mode": mode,
+                "agents": agents
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Execute task and stream progress
+        result = unified.execute_task(task, mode=mode, agents=agents)
+        
+        # If orchestrator is initialized, get activity feed
+        activity_feed = []
+        if hasattr(unified, 'orchestrator') and unified.orchestrator:
+            if hasattr(unified.orchestrator, 'collab_engine') and unified.orchestrator.collab_engine:
+                collab = unified.orchestrator.collab_engine
+                if hasattr(collab, 'activity_log'):
+                    activity_feed = collab.activity_log[-20:]  # Last 20 activities
+                
+                # Broadcast activity updates
+                for activity in activity_feed:
+                    await manager.broadcast({
+                        "type": "activity_update",
+                        "data": activity,
+                        "timestamp": datetime.now().isoformat()
+                    })
+        
+        # Send completion status
+        await websocket.send_json({
+            "type": "task_completed",
+            "data": {
+                "task": task,
+                "result": str(result),
+                "activity_feed": activity_feed
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Broadcast completion
+        await manager.broadcast({
+            "type": "task_completed",
+            "data": {
+                "task": task,
+                "mode": mode
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        await websocket.send_json({
+            "type": "task_error",
+            "data": {"error": error_msg},
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        await manager.broadcast({
+            "type": "task_error",
+            "data": {"error": error_msg},
+            "timestamp": datetime.now().isoformat()
+        })
         # Execute task
         result = unified.execute_task(task, mode=mode, agents=agents)
         
@@ -569,7 +746,7 @@ async def handle_agent_info(data: dict, websocket: WebSocket):
 
 
 async def handle_full_orchestrator(data: dict, websocket: WebSocket):
-    """Handle full orchestrator mode activation."""
+    """Handle full orchestrator mode activation with enhanced streaming."""
     import sys
     from pathlib import Path
     
@@ -578,33 +755,34 @@ async def handle_full_orchestrator(data: dict, websocket: WebSocket):
         sys.path.insert(0, str(project_root))
     
     try:
-        from unified_interface import get_unified_interface
+        from webapp_adapter import get_webapp_adapter
+        from orchestrator_v2 import EnhancedOrchestrator
         
         task = data.get("task", "")
-        unified = get_unified_interface()
         
-        # Send initial status
-        await websocket.send_json({
-            "type": "task_update",
-            "data": {
-                "task": task,
-                "status": "started",
-                "mode": "full_orchestrator"
-            },
-            "timestamp": datetime.now().isoformat()
-        })
+        # Get or create adapter
+        orchestrator = EnhancedOrchestrator()
+        adapter = get_webapp_adapter(orchestrator)
         
-        # Execute in full orchestrator mode
-        result = unified.execute_task(task, mode="full_orchestrator")
+        # Register callback to stream events to websocket
+        async def stream_to_websocket(event):
+            await websocket.send_json(event)
+            # Also broadcast to all clients
+            await manager.broadcast(event)
         
+        adapter.register_callback(stream_to_websocket)
+        
+        # Execute task with streaming
+        result = await adapter.execute_task_with_streaming(
+            task=task,
+            mode="team",
+            agents=data.get("agents")
+        )
+        
+        # Send final result
         await websocket.send_json({
             "type": "full_orchestrator_result",
-            "data": {
-                "task": task,
-                "result": result,
-                "status": "success",
-                "mode": "full_orchestrator"
-            },
+            "data": result,
             "timestamp": datetime.now().isoformat()
         })
         
