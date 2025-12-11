@@ -258,20 +258,32 @@ Keep it concise and helpful."""
     
     def _get_enhanced_plan(self, user_request: str, timeout: int) -> str:
         """Get delegation plan from overseer (enhanced style)."""
-        prompt = f"""You are Helix, team overseer. Break down this request into agent tasks.
+        prompt = f"""You are Helix, team overseer. Break down this request into ACTIONABLE tasks that agents will ACTUALLY IMPLEMENT.
 
 REQUEST: {user_request}
+
+CRITICAL: Each task must be SPECIFIC and ACTIONABLE - agents will GENERATE CODE, CREATE FILES, and IMPLEMENT solutions.
+
+Example GOOD task delegation:
+- aurora: Create the complete HTML structure for the car enthusiast homepage with navigation, hero section, and car gallery grid
+- felix: Implement Python Flask backend API with endpoints for car data (GET /cars, POST /cars, GET /cars/:id) including database models
+- pixel: Design the full CSS styling with responsive layout, modern color scheme, and hover effects for car cards
+
+Example BAD task delegation (too vague):
+- aurora: Look into frontend requirements
+- felix: Help with backend
+- pixel: Design stuff
 
 You MUST delegate to the team. Respond EXACTLY in this format:
 
 AGENTS NEEDED:
-- aurora: [task for frontend/UI work]
-- felix: [task for Python/backend]
-- pixel: [task for design/styling]
+- aurora: [SPECIFIC ACTIONABLE TASK with what to implement/create]
+- felix: [SPECIFIC ACTIONABLE TASK with what to implement/create]
+- pixel: [SPECIFIC ACTIONABLE TASK with what to implement/create]
 
 Available agents: aurora, felix, sage, ember, orion, atlas, mira, vex, sol, echo, nova, quinn, blaze, ivy, zephyr, pixel, script, turbo, sentinel, link, patch, pulse, helix
 
-Pick 2-4 relevant agents and assign specific tasks. Be concise."""
+Pick 2-4 relevant agents and assign SPECIFIC, DETAILED tasks. Each task should be clear enough that the agent knows EXACTLY what to build/create/implement."""
         
         try:
             response = self.overseer.send_message(prompt, stream=False)
@@ -372,7 +384,22 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
                     task_summary['status'] = 'generating'
                     self._log_activity(task.agent, "Generating response...", "info")
                     
-                    result = agent.send_message(task.description, stream=False)
+                    # Wrap task with action-oriented instructions
+                    actionable_prompt = f"""You are assigned the following task:
+
+{task.description}
+
+CRITICAL INSTRUCTIONS:
+- ACTUALLY IMPLEMENT this - don't just suggest or explain
+- If it's code: Write the complete, working code
+- If it's design: Create the actual design specifications with details
+- If it's a feature: Build it fully with all necessary components
+- Include file contents if creating files
+- Provide complete, ready-to-use implementations
+
+Your response should contain the actual work product, not just plans or suggestions."""
+                    
+                    result = agent.send_message(actionable_prompt, stream=False)
                     
                     task.status = "complete"
                     task.result = result
@@ -799,17 +826,29 @@ JSON:"""
         
         agent_chat = self.agent_chats[agent_name]
         
-        context = f"""You are working on the following task:
+        # Enhanced prompt to ensure agents actually generate code and execute tasks
+        context = f"""You are working on the following task as part of a development team:
 
 Task: {task.description}
 Priority: {task.priority.value}
+
+IMPORTANT: You must ACTUALLY DO THE WORK, not just suggest what to do.
+- If the task involves writing code: WRITE THE COMPLETE CODE
+- If it involves creating files: PROVIDE THE FULL FILE CONTENTS
+- If it involves design: CREATE THE ACTUAL DESIGN with specifics
+- If it involves implementation: IMPLEMENT IT FULLY
 
 You have access to:
 - File operations (read, write, list files)
 - Code execution (Python, JavaScript, Bash)
 - Previous conversation context
 
-Please provide your solution or response."""
+PROVIDE YOUR ACTUAL IMPLEMENTATION OR SOLUTION. DO NOT just explain what needs to be done - DO IT.
+
+Format your response with:
+1. Brief summary of what you're implementing
+2. The actual code/design/implementation
+3. Any additional notes or next steps"""
         
         try:
             task.status = "running"
