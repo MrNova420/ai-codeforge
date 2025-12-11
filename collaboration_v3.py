@@ -6,6 +6,7 @@ Merged ALL features from simple, enhanced, engine, and v3:
 - Enhanced: Real-time progress tracking, live updates
 - Engine: Task management, file operations, code execution
 - V3: JSON parsing, parallel execution, AgentManager threading
+- Recovery: Automatic error handling and agent fallbacks
 
 This is the ONE TRUE collaboration engine with everything integrated.
 """
@@ -72,7 +73,8 @@ class CollaborationV3:
     9. File operations integration (engine)
     10. Code execution support (engine)
     11. Dependency graph management (v3)
-    12. Error handling & recovery (all)
+    12. Error handling & recovery (NEW)
+    13. Automatic retry with fallbacks (NEW)
     """
     
     def __init__(self, agent_chats: Dict):
@@ -85,15 +87,21 @@ class CollaborationV3:
         self.activity_log = []  # Comprehensive activity logging
         self.task_history = []  # History of all task summaries
         
+        # Initialize error recovery
+        from agent_error_recovery import get_error_recovery
+        self.error_recovery = get_error_recovery()
+        
         # Initialize agent statuses
         for name in agent_chats.keys():
             self.agent_statuses[name] = {
                 'status': 'idle',
                 'current_task': None,
-                'last_active': datetime.now().isoformat()
+                'last_active': datetime.now().isoformat(),
+                'errors': 0,
+                'recovered': 0
             }
         
-        self._log_activity("System", "Collaboration engine initialized", "info")
+        self._log_activity("System", "Collaboration engine initialized with error recovery", "info")
     
     def _log_activity(self, source: str, message: str, level: str = "info"):
         """Log activity to comprehensive activity feed."""
@@ -128,6 +136,21 @@ class CollaborationV3:
             console.print(f"[dim]{timestamp}[/dim] {icon} [cyan]{activity['source']}:[/cyan] {activity['message']}")
         
         console.print(f"\n[dim]Total activities: {len(self.activity_log)} | Showing last {len(recent_activities)}[/dim]")
+    
+    def get_error_report(self) -> Dict[str, Any]:
+        """Get comprehensive error and recovery report."""
+        return {
+            'recovery_system': self.error_recovery.get_error_report(),
+            'recovery_rate': self.error_recovery.get_recovery_rate(),
+            'agent_errors': {
+                agent: {
+                    'total_errors': status.get('errors', 0),
+                    'recovered': status.get('recovered', 0),
+                    'success_rate': 1 - (status.get('errors', 0) / max(status.get('errors', 0) + status.get('recovered', 0), 1))
+                }
+                for agent, status in self.agent_statuses.items()
+            }
+        }
     
     # ========== MAIN ENTRY POINT ==========
     
