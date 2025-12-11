@@ -435,12 +435,29 @@ class MasterOrchestrator:
         }
     
     async def _execute_agent_task(self, agent: Any, assignment: AgentAssignment) -> str:
-        """Execute a single agent task."""
+        """Execute a single agent task with action-oriented prompting."""
         try:
+            # Wrap task with actionable instructions
+            actionable_task = f"""You are assigned: {assignment.task}
+
+CRITICAL INSTRUCTIONS:
+- ACTUALLY IMPLEMENT this - don't just suggest or explain
+- If it's code: Write the complete, working code
+- If it's design: Create the actual design specifications with details
+- If it's a feature: Build it fully with all necessary components
+- Include file contents if creating files
+- Provide complete, ready-to-use implementations
+
+Your response should contain the actual work product, not just plans or suggestions.
+
+Role: {assignment.role}
+
+BEGIN YOUR IMPLEMENTATION:"""
+            
             if hasattr(agent, 'execute'):
-                result = await agent.execute(assignment.task)
+                result = await agent.execute(actionable_task)
             else:
-                result = agent(assignment.task)
+                result = agent(actionable_task)
             return str(result)
         except Exception as e:
             return f"Error: {str(e)}"
