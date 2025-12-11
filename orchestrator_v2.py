@@ -207,7 +207,7 @@ class EnhancedOrchestrator:
         # Show team status
         self._show_team_status()
         
-        console.print("\n[dim]Commands: 'agents', 'files', 'exit'[/dim]\n")
+        console.print("\n[dim]Commands: 'agents', 'files', 'activity', 'history', 'exit'[/dim]\n")
         
         while True:
             try:
@@ -222,6 +222,14 @@ class EnhancedOrchestrator:
                 
                 if user_input.lower() == 'files':
                     self._show_workspace_files()
+                    continue
+                
+                if user_input.lower() == 'activity':
+                    self.collab_engine.show_activity_feed()
+                    continue
+                
+                if user_input.lower() == 'history':
+                    self._show_task_history()
                     continue
                 
                 if not user_input.strip():
@@ -239,6 +247,22 @@ class EnhancedOrchestrator:
                 break
             except Exception as e:
                 console.print(f"\n[red]Error: {e}[/red]")
+    
+    def _show_task_history(self):
+        """Show task execution history."""
+        if not hasattr(self.collab_engine, 'task_history') or not self.collab_engine.task_history:
+            console.print("[yellow]No task history available yet[/yellow]")
+            return
+        
+        console.print("\n[bold cyan]📜 Task History[/bold cyan]\n")
+        for task in self.collab_engine.task_history:
+            status_icon = "✅" if task['status'] == 'complete' else "❌"
+            status_color = "green" if task['status'] == 'complete' else "red"
+            
+            console.print(f"{status_icon} [{status_color}]{task['agent'].capitalize()}[/{status_color}]")
+            console.print(f"   Task: {task['task'][:60]}...")
+            console.print(f"   Duration: {task.get('duration', 'N/A')} | Result: {task.get('result_length', 0)} chars")
+            console.print()
     
     def _init_collaboration_agents(self):
         """Initialize agents for collaboration with ALL V3 features."""

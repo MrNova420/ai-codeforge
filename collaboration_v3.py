@@ -76,6 +76,8 @@ class CollaborationV3:
         self.tasks: List[Task] = []
         self.current_phase = "Planning"
         self.agent_statuses = {}  # track agent status
+        self.activity_log = []  # Comprehensive activity logging
+        self.task_history = []  # History of all task summaries
         
         # Initialize agent statuses
         for name in agent_chats.keys():
@@ -84,6 +86,43 @@ class CollaborationV3:
                 'current_task': None,
                 'last_active': datetime.now().isoformat()
             }
+        
+        self._log_activity("System", "Collaboration engine initialized", "info")
+    
+    def _log_activity(self, source: str, message: str, level: str = "info"):
+        """Log activity to comprehensive activity feed."""
+        activity = {
+            'timestamp': datetime.now().isoformat(),
+            'source': source,
+            'message': message,
+            'level': level  # info, warning, error, success
+        }
+        self.activity_log.append(activity)
+        
+        # Also print to console for real-time feedback
+        level_colors = {
+            'info': 'blue',
+            'warning': 'yellow',
+            'error': 'red',
+            'success': 'green'
+        }
+        color = level_colors.get(level, 'white')
+        timestamp = activity['timestamp'].split('T')[1][:8]
+        # console.print(f"[dim][{timestamp}][/dim] [{color}]{source}:[/{color}] {message}")
+    
+    def show_activity_feed(self, limit: int = 20):
+        """Display the activity feed."""
+        console.print("\n[bold cyan]📊 Activity Feed[/bold cyan]")
+        
+        recent_activities = self.activity_log[-limit:] if len(self.activity_log) > limit else self.activity_log
+        
+        for activity in recent_activities:
+            timestamp = activity['timestamp'].split('T')[1][:8]
+            level = activity['level']
+            icon = {'info': 'ℹ️', 'warning': '⚠️', 'error': '❌', 'success': '✅'}.get(level, '•')
+            console.print(f"[dim]{timestamp}[/dim] {icon} [cyan]{activity['source']}:[/cyan] {activity['message']}")
+        
+        console.print(f"\n[dim]Total activities: {len(self.activity_log)} | Showing last {len(recent_activities)}[/dim]")
     
     # ========== MAIN ENTRY POINT ==========
     
@@ -99,7 +138,10 @@ class CollaborationV3:
         Returns:
             Dict with plan, tasks, results, and summary
         """
+        self._log_activity("System", f"Received request: {user_request[:50]}...", "info")
+        
         if not self.overseer:
+            self._log_activity("System", "Overseer not available", "error")
             return self._error_response("Helix (Overseer) not available")
         
         # Auto-detect complexity
@@ -110,6 +152,8 @@ class CollaborationV3:
                 mode = 'parallel'
             else:
                 mode = 'enhanced'
+        
+        self._log_activity("System", f"Selected mode: {mode}", "info")
         
         # Route to appropriate handler
         if mode == 'simple':
@@ -165,18 +209,25 @@ Keep it concise and helpful."""
     
     def _handle_enhanced(self, user_request: str, timeout: int) -> Dict:
         """Enhanced mode - full delegation with real-time progress."""
+        self._log_activity("Enhanced Mode", "Starting enhanced mode execution", "info")
         console.print("\n[bold cyan]🎯 Analyzing Request...[/bold cyan]")
         
         # Phase 1: Get plan from overseer
+        self._log_activity("Helix", "Analyzing request and creating plan", "info")
         plan = self._get_enhanced_plan(user_request, timeout=60)
         if plan.startswith("Error:"):
+            self._log_activity("Helix", "Failed to create plan", "error")
             return self._error_response(plan)
+        
+        self._log_activity("Helix", f"Plan created with {len(plan)} chars", "success")
         
         # Phase 2: Parse and assign tasks
         console.print("\n[bold cyan]📋 Creating Task Assignments...[/bold cyan]")
         self._parse_enhanced_tasks(plan)
+        self._log_activity("System", f"Parsed {len(self.tasks)} tasks from plan", "info")
         
         if not self.tasks:
+            self._log_activity("System", "No tasks parsed, using direct response", "warning")
             return {
                 'mode': 'enhanced',
                 'plan': plan,
@@ -185,12 +236,17 @@ Keep it concise and helpful."""
                 'summary': plan
             }
         
+        # Log task assignments
+        for task in self.tasks:
+            self._log_activity("System", f"Assigned task to {task.agent}: {task.description[:50]}...", "info")
+        
         # Phase 3: Execute with live progress
         console.print(f"\n[bold cyan]⚡ Executing {len(self.tasks)} Tasks...[/bold cyan]")
         results = self._execute_with_live_progress(timeout)
         
         # Phase 4: Summarize
         summary = self._create_summary(results)
+        self._log_activity("System", "All tasks completed, summary created", "success")
         
         return {
             'mode': 'enhanced',
@@ -251,8 +307,9 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
                             ))
     
     def _execute_with_live_progress(self, timeout: int) -> Dict:
-        """Execute tasks with live progress bars (from enhanced)."""
+        """Execute tasks with live progress bars and detailed status tracking."""
         results = {}
+        task_summaries = []  # Store detailed task summaries
         
         with Progress(
             SpinnerColumn(),
@@ -277,41 +334,105 @@ Pick 2-4 relevant agents and assign specific tasks. Be concise."""
                 task_id = progress_tasks[task.agent]
                 agent = self.agent_chats.get(task.agent)
                 
+                # Create task summary box
+                task_summary = {
+                    'agent': task.agent,
+                    'task': task.description,
+                    'status': 'starting',
+                    'start_time': datetime.now().isoformat(),
+                    'result': None,
+                    'duration': 0
+                }
+                
                 if not agent:
                     task.status = "error"
                     task.result = f"Agent {task.agent} not found"
                     progress.update(task_id, completed=100, description="[red]Not found[/red]")
+                    task_summary['status'] = 'error'
+                    task_summary['result'] = task.result
+                    task_summaries.append(task_summary)
+                    self._log_activity(task.agent, "Agent not found", "error")
                     continue
                 
                 task.status = "running"
                 task.start_time = time.time()
                 self.agent_statuses[task.agent]['status'] = 'busy'
                 self.agent_statuses[task.agent]['current_task'] = task.task_id
-                progress.update(task_id, completed=10, description="[yellow]Working...[/yellow]")
+                
+                self._log_activity(task.agent, f"Starting task: {task.description[:50]}...", "info")
+                progress.update(task_id, completed=10, description="[yellow]⏳ Analyzing...[/yellow]")
+                task_summary['status'] = 'analyzing'
                 
                 try:
-                    progress.update(task_id, completed=30, description="[cyan]Generating...[/cyan]")
+                    progress.update(task_id, completed=30, description="[cyan]💭 Thinking...[/cyan]")
+                    task_summary['status'] = 'thinking'
+                    self._log_activity(task.agent, "Processing request...", "info")
+                    
+                    progress.update(task_id, completed=50, description="[cyan]🔨 Generating...[/cyan]")
+                    task_summary['status'] = 'generating'
+                    self._log_activity(task.agent, "Generating response...", "info")
+                    
                     result = agent.send_message(task.description, stream=False)
                     
                     task.status = "complete"
                     task.result = result
                     task.end_time = time.time()
+                    duration = task.end_time - task.start_time
                     results[task.agent] = result
+                    
                     self.agent_statuses[task.agent]['status'] = 'idle'
                     self.agent_statuses[task.agent]['current_task'] = None
                     self.agent_statuses[task.agent]['last_active'] = datetime.now().isoformat()
                     
-                    progress.update(task_id, completed=100, description="[green]Complete ✓[/green]")
+                    task_summary['status'] = 'complete'
+                    task_summary['result'] = result
+                    task_summary['duration'] = f"{duration:.1f}s"
+                    task_summary['result_length'] = len(str(result))
+                    
+                    self._log_activity(task.agent, f"Task completed in {duration:.1f}s ({len(str(result))} chars)", "success")
+                    progress.update(task_id, completed=100, description=f"[green]✅ Complete ({duration:.1f}s)[/green]")
+                    
+                    # Show individual agent summary box after completion
+                    self._show_agent_summary(task.agent, task_summary)
                     
                 except Exception as e:
                     task.status = "error"
                     task.result = f"Error: {str(e)}"
                     task.end_time = time.time()
+                    duration = task.end_time - task.start_time
                     results[task.agent] = task.result
                     self.agent_statuses[task.agent]['status'] = 'idle'
-                    progress.update(task_id, completed=100, description=f"[red]Error[/red]")
+                    
+                    task_summary['status'] = 'error'
+                    task_summary['result'] = task.result
+                    task_summary['duration'] = f"{duration:.1f}s"
+                    
+                    self._log_activity(task.agent, f"Task failed: {str(e)}", "error")
+                    progress.update(task_id, completed=100, description=f"[red]❌ Error[/red]")
+                
+                task_summaries.append(task_summary)
+        
+        # Store task summaries for history
+        self.task_history = task_summaries
         
         return results
+    
+    def _show_agent_summary(self, agent_name: str, task_summary: Dict):
+        """Display a summary box for a completed agent task."""
+        status_icon = "✅" if task_summary['status'] == 'complete' else "❌"
+        status_color = "green" if task_summary['status'] == 'complete' else "red"
+        
+        summary_text = f"""[{status_color}]{status_icon} Status:[/{status_color}] {task_summary['status']}
+[cyan]⏱️  Duration:[/cyan] {task_summary.get('duration', 'N/A')}
+[cyan]📝 Task:[/cyan] {task_summary['task'][:80]}{'...' if len(task_summary['task']) > 80 else ''}
+[cyan]📊 Result Length:[/cyan] {task_summary.get('result_length', 0)} chars"""
+        
+        console.print(Panel(
+            summary_text,
+            title=f"[bold cyan]📦 {agent_name.capitalize()} - Task Summary[/bold cyan]",
+            border_style=status_color,
+            subtitle=f"[dim]{task_summary['start_time'].split('T')[1][:8]}[/dim]"
+        ))
     
     # ========== PARALLEL MODE (from collaboration_v3.py) ==========
         
@@ -589,21 +710,32 @@ JSON:"""
         }
     
     def render_results(self, response: Dict):
-        """Render the results to console."""
+        """Render the results to console with full output and better formatting."""
         # Show summary
         if response.get('summary'):
             console.print(Panel(
                 response['summary'],
-                title="[cyan]Summary[/cyan]",
+                title="[cyan]📊 Summary[/cyan]",
                 border_style="cyan"
             ))
         
-        # Show individual results
+        # Show individual results with full content
         for agent, result in response.get('results', {}).items():
+            # Format the result content with line numbers for long outputs
+            result_str = str(result)
+            
+            # Add scrolling hint for very long outputs
+            if len(result_str) > 2000:
+                hint = f"\n\n[dim]ℹ️  Response length: {len(result_str)} chars | Scroll to view all content[/dim]"
+                display_content = result_str + hint
+            else:
+                display_content = result_str
+            
             console.print(Panel(
-                result[:500] + ("..." if len(result) > 500 else ""),
-                title=f"[cyan]{agent.capitalize()}[/cyan]",
-                border_style="cyan"
+                display_content,
+                title=f"[cyan]🤖 {agent.capitalize()}[/cyan]",
+                border_style="cyan",
+                subtitle=f"[dim]{len(result_str)} chars[/dim]"
             ))
     
     # ========== ADDITIONAL METHODS FROM ENGINE ==========
