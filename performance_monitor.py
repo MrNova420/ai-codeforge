@@ -5,11 +5,17 @@ Monitors agent execution time, throughput, and resource usage
 """
 
 import time
-import psutil
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from collections import deque
+
+# Optional psutil for resource monitoring
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 
 @dataclass
@@ -157,9 +163,18 @@ class PerformanceMonitor:
     def get_system_stats(self) -> Dict[str, Any]:
         """Get overall system performance statistics."""
         try:
-            # CPU and memory usage
-            cpu_percent = psutil.cpu_percent(interval=0.1)
-            memory = psutil.virtual_memory()
+            # CPU and memory usage (if psutil available)
+            cpu_percent = None
+            memory_percent = None
+            memory_used_mb = None
+            memory_available_mb = None
+            
+            if PSUTIL_AVAILABLE:
+                cpu_percent = psutil.cpu_percent(interval=0.1)
+                memory = psutil.virtual_memory()
+                memory_percent = memory.percent
+                memory_used_mb = memory.used / (1024 * 1024)
+                memory_available_mb = memory.available / (1024 * 1024)
             
             # Calculate overall metrics
             all_durations = []
@@ -170,18 +185,25 @@ class PerformanceMonitor:
             
             uptime = time.time() - self.start_time
             
-            return {
+            stats = {
                 'uptime_seconds': uptime,
                 'uptime_formatted': str(timedelta(seconds=int(uptime))),
                 'total_tasks': total_tasks,
                 'avg_task_duration': sum(all_durations) / len(all_durations) if all_durations else 0.0,
                 'throughput': total_tasks / (uptime / 60) if uptime > 0 else 0.0,  # tasks/minute
-                'cpu_percent': cpu_percent,
-                'memory_percent': memory.percent,
-                'memory_used_mb': memory.used / (1024 * 1024),
-                'memory_available_mb': memory.available / (1024 * 1024),
                 'active_alerts': len([a for a in self.alerts if not a.get('acknowledged', False)])
             }
+            
+            # Add resource stats if available
+            if cpu_percent is not None:
+                stats['cpu_percent'] = cpu_percent
+            if memory_percent is not None:
+                stats['memory_percent'] = memory_percent
+                stats['memory_used_mb'] = memory_used_mb
+                stats['memory_available_mb'] = memory_available_mb
+            
+            return stats
+            
         except Exception as e:
             return {
                 'error': str(e),
