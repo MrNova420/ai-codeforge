@@ -22,7 +22,12 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from agent_manager import AgentManager, AgentResponse
-from prompts_utils import build_actionable_task_prompt, build_enhanced_task_prompt, build_delegation_prompt
+from prompts_utils import (
+    build_actionable_task_prompt, 
+    build_enhanced_task_prompt, 
+    build_delegation_prompt,
+    SCROLL_HINT_THRESHOLD
+)
 
 console = Console()
 
@@ -258,10 +263,9 @@ Keep it concise and helpful."""
     
     def _get_enhanced_plan(self, user_request: str, timeout: int) -> str:
         """Get delegation plan from overseer (enhanced style)."""
-        # Use shared delegation prompt utility
-        available_agents = ["aurora", "felix", "sage", "ember", "orion", "atlas", "mira", "vex", 
-                          "sol", "echo", "nova", "quinn", "blaze", "ivy", "zephyr", "pixel", 
-                          "script", "turbo", "sentinel", "link", "patch", "pulse", "helix"]
+        # Dynamically get available agents from agent_chats
+        available_agents = list(self.agent_chats.keys())
+        # Use shared delegation prompt utility with actual available agents
         prompt = build_delegation_prompt(user_request, available_agents)
         
         try:
@@ -718,8 +722,8 @@ JSON:"""
             # Format the result content with line numbers for long outputs
             result_str = str(result)
             
-            # Add scrolling hint for very long outputs
-            if len(result_str) > 2000:
+            # Add scrolling hint for very long outputs (using constant)
+            if len(result_str) > SCROLL_HINT_THRESHOLD:
                 hint = f"\n\n[dim]ℹ️  Response length: {len(result_str)} chars | Scroll to view all content[/dim]"
                 display_content = result_str + hint
             else:

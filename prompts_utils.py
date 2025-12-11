@@ -4,7 +4,42 @@ Prompt Utilities - Shared prompt builders for consistent agent behavior
 Centralizes action-oriented prompts to ensure all agents generate actual implementations
 """
 
-from typing import Optional
+from typing import Optional, List
+
+# Configuration constants
+CONTEXT_SUMMARY_LENGTH = 200  # Characters to store in context summaries
+SCROLL_HINT_THRESHOLD = 2000  # Show scroll hints for responses longer than this
+
+# Available agents in the system
+AVAILABLE_AGENTS = [
+    "aurora", "felix", "sage", "ember", "orion", "atlas", "mira", "vex",
+    "sol", "echo", "nova", "quinn", "blaze", "ivy", "zephyr", "pixel",
+    "script", "turbo", "sentinel", "link", "patch", "pulse", "helix"
+]
+
+
+def get_delegation_examples(agent_names: Optional[List[str]] = None) -> str:
+    """
+    Get delegation examples using specified agents or defaults.
+    
+    Args:
+        agent_names: Optional list of agent names to use in examples
+    
+    Returns:
+        String containing good and bad delegation examples
+    """
+    # Use provided agents or defaults
+    agents = agent_names if agent_names and len(agent_names) >= 3 else ["aurora", "felix", "pixel"]
+    
+    return f"""Example GOOD task delegation:
+- {agents[0]}: Create the complete HTML structure for the car enthusiast homepage with navigation, hero section, and car gallery grid
+- {agents[1]}: Implement Python Flask backend API with endpoints for car data (GET /cars, POST /cars, GET /cars/:id) including database models
+- {agents[2]}: Design the full CSS styling with responsive layout, modern color scheme, and hover effects for car cards
+
+Example BAD task delegation (too vague):
+- {agents[0]}: Look into frontend requirements
+- {agents[1]}: Help with backend
+- {agents[2]}: Design stuff"""
 
 
 def build_actionable_task_prompt(
@@ -88,18 +123,23 @@ CRITICAL INSTRUCTIONS:
 Your response should contain the actual work product, not just plans or suggestions."""
 
 
-def build_delegation_prompt(user_request: str, available_agents: list) -> str:
+def build_delegation_prompt(user_request: str, available_agents: Optional[List[str]] = None) -> str:
     """
     Build a prompt for Helix to delegate tasks to agents.
     
     Args:
         user_request: The user's original request
-        available_agents: List of available agent names
+        available_agents: Optional list of available agent names (uses default if None)
     
     Returns:
         Complete delegation prompt with examples
     """
-    agents_list = ", ".join(available_agents)
+    # Use provided agents or default list
+    agents = available_agents if available_agents else AVAILABLE_AGENTS
+    agents_list = ", ".join(agents)
+    
+    # Get delegation examples
+    examples = get_delegation_examples(agents[:3] if len(agents) >= 3 else None)
     
     return f"""You are Helix, team overseer. Break down this request into ACTIONABLE tasks that agents will ACTUALLY IMPLEMENT.
 
@@ -107,22 +147,14 @@ REQUEST: {user_request}
 
 CRITICAL: Each task must be SPECIFIC and ACTIONABLE - agents will GENERATE CODE, CREATE FILES, and IMPLEMENT solutions.
 
-Example GOOD task delegation:
-- aurora: Create the complete HTML structure for the car enthusiast homepage with navigation, hero section, and car gallery grid
-- felix: Implement Python Flask backend API with endpoints for car data (GET /cars, POST /cars, GET /cars/:id) including database models
-- pixel: Design the full CSS styling with responsive layout, modern color scheme, and hover effects for car cards
-
-Example BAD task delegation (too vague):
-- aurora: Look into frontend requirements
-- felix: Help with backend
-- pixel: Design stuff
+{examples}
 
 You MUST delegate to the team. Respond EXACTLY in this format:
 
 AGENTS NEEDED:
-- aurora: [SPECIFIC ACTIONABLE TASK with what to implement/create]
-- felix: [SPECIFIC ACTIONABLE TASK with what to implement/create]
-- pixel: [SPECIFIC ACTIONABLE TASK with what to implement/create]
+- [agent_name]: [SPECIFIC ACTIONABLE TASK with what to implement/create]
+- [agent_name]: [SPECIFIC ACTIONABLE TASK with what to implement/create]
+- [agent_name]: [SPECIFIC ACTIONABLE TASK with what to implement/create]
 
 Available agents: {agents_list}
 

@@ -14,6 +14,7 @@ from rich.prompt import Prompt
 from rich.live import Live
 from rich.spinner import Spinner
 from rich.status import Status
+from prompts_utils import CONTEXT_SUMMARY_LENGTH
 
 console = Console()
 
@@ -113,11 +114,11 @@ print(test())
     def send_message(self, content: str, stream: bool = False, 
                     on_token: Optional[Callable] = None) -> str:
         """Send message and get response with enhanced context tracking."""
-        # Add to context window
+        # Add to context window (using constant for summary length)
         self.context_window.append({
             'timestamp': datetime.now().isoformat(),
             'role': 'user',
-            'content': content[:200]  # Store summary for context
+            'content': content[:CONTEXT_SUMMARY_LENGTH]  # Store summary for context
         })
         
         self.messages.append(Message("user", content))
@@ -145,7 +146,7 @@ print(test())
         self.context_window.append({
             'timestamp': datetime.now().isoformat(),
             'role': 'assistant',
-            'content': response[:200]
+            'content': response[:CONTEXT_SUMMARY_LENGTH]
         })
         
         self.messages.append(Message("assistant", response, self.agent.name))
