@@ -22,6 +22,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from agent_manager import AgentManager, AgentResponse
+from prompts_utils import build_actionable_task_prompt, build_enhanced_task_prompt, build_delegation_prompt
 
 console = Console()
 
@@ -108,7 +109,6 @@ class CollaborationV3:
         }
         color = level_colors.get(level, 'white')
         timestamp = activity['timestamp'].split('T')[1][:8]
-        # console.print(f"[dim][{timestamp}][/dim] [{color}]{source}:[/{color}] {message}")
     
     def show_activity_feed(self, limit: int = 20):
         """Display the activity feed."""
@@ -258,32 +258,11 @@ Keep it concise and helpful."""
     
     def _get_enhanced_plan(self, user_request: str, timeout: int) -> str:
         """Get delegation plan from overseer (enhanced style)."""
-        prompt = f"""You are Helix, team overseer. Break down this request into ACTIONABLE tasks that agents will ACTUALLY IMPLEMENT.
-
-REQUEST: {user_request}
-
-CRITICAL: Each task must be SPECIFIC and ACTIONABLE - agents will GENERATE CODE, CREATE FILES, and IMPLEMENT solutions.
-
-Example GOOD task delegation:
-- aurora: Create the complete HTML structure for the car enthusiast homepage with navigation, hero section, and car gallery grid
-- felix: Implement Python Flask backend API with endpoints for car data (GET /cars, POST /cars, GET /cars/:id) including database models
-- pixel: Design the full CSS styling with responsive layout, modern color scheme, and hover effects for car cards
-
-Example BAD task delegation (too vague):
-- aurora: Look into frontend requirements
-- felix: Help with backend
-- pixel: Design stuff
-
-You MUST delegate to the team. Respond EXACTLY in this format:
-
-AGENTS NEEDED:
-- aurora: [SPECIFIC ACTIONABLE TASK with what to implement/create]
-- felix: [SPECIFIC ACTIONABLE TASK with what to implement/create]
-- pixel: [SPECIFIC ACTIONABLE TASK with what to implement/create]
-
-Available agents: aurora, felix, sage, ember, orion, atlas, mira, vex, sol, echo, nova, quinn, blaze, ivy, zephyr, pixel, script, turbo, sentinel, link, patch, pulse, helix
-
-Pick 2-4 relevant agents and assign SPECIFIC, DETAILED tasks. Each task should be clear enough that the agent knows EXACTLY what to build/create/implement."""
+        # Use shared delegation prompt utility
+        available_agents = ["aurora", "felix", "sage", "ember", "orion", "atlas", "mira", "vex", 
+                          "sol", "echo", "nova", "quinn", "blaze", "ivy", "zephyr", "pixel", 
+                          "script", "turbo", "sentinel", "link", "patch", "pulse", "helix"]
+        prompt = build_delegation_prompt(user_request, available_agents)
         
         try:
             response = self.overseer.send_message(prompt, stream=False)
@@ -384,20 +363,8 @@ Pick 2-4 relevant agents and assign SPECIFIC, DETAILED tasks. Each task should b
                     task_summary['status'] = 'generating'
                     self._log_activity(task.agent, "Generating response...", "info")
                     
-                    # Wrap task with action-oriented instructions
-                    actionable_prompt = f"""You are assigned the following task:
-
-{task.description}
-
-CRITICAL INSTRUCTIONS:
-- ACTUALLY IMPLEMENT this - don't just suggest or explain
-- If it's code: Write the complete, working code
-- If it's design: Create the actual design specifications with details
-- If it's a feature: Build it fully with all necessary components
-- Include file contents if creating files
-- Provide complete, ready-to-use implementations
-
-Your response should contain the actual work product, not just plans or suggestions."""
+                    # Use shared utility for actionable prompts
+                    actionable_prompt = build_enhanced_task_prompt(task.description)
                     
                     result = agent.send_message(actionable_prompt, stream=False)
                     
@@ -820,35 +787,38 @@ JSON:"""
         return task
     
     def execute_single_agent_task(self, agent_name: str, task: Task) -> str:
-        """Execute a task with the assigned agent (from engine)."""
+        """Execute a task with the assigned agent with enhanced capabilities."""
         if agent_name not in self.agent_chats:
             return "Error: Agent not found"
         
         agent_chat = self.agent_chats[agent_name]
         
-        # Enhanced prompt to ensure agents actually generate code and execute tasks
-        context = f"""You are working on the following task as part of a development team:
-
-Task: {task.description}
-Priority: {task.priority.value}
-
-IMPORTANT: You must ACTUALLY DO THE WORK, not just suggest what to do.
-- If the task involves writing code: WRITE THE COMPLETE CODE
-- If it involves creating files: PROVIDE THE FULL FILE CONTENTS
-- If it involves design: CREATE THE ACTUAL DESIGN with specifics
-- If it involves implementation: IMPLEMENT IT FULLY
-
-You have access to:
+        # Enhanced prompt using shared utility with full context
+        additional_context = f"""You have access to:
 - File operations (read, write, list files)
 - Code execution (Python, JavaScript, Bash)
 - Previous conversation context
+- Your specialized skills and knowledge
 
-PROVIDE YOUR ACTUAL IMPLEMENTATION OR SOLUTION. DO NOT just explain what needs to be done - DO IT.
+WORK STYLE:
+1. First, analyze what needs to be done
+2. Break it down into concrete steps
+3. IMPLEMENT each step with actual code/content
+4. Test your implementation mentally
+5. Provide the complete, working solution
 
-Format your response with:
-1. Brief summary of what you're implementing
-2. The actual code/design/implementation
-3. Any additional notes or next steps"""
+QUALITY STANDARDS:
+- Code must be production-ready
+- Include error handling
+- Add comments for complex logic
+- Follow best practices for the language/framework
+- Make it maintainable and extensible"""
+        
+        context = build_actionable_task_prompt(
+            task_description=task.description,
+            priority=task.priority.value,
+            additional_context=additional_context
+        )
         
         try:
             task.status = "running"

@@ -14,6 +14,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt, Confirm
 from rich.markdown import Markdown
+from prompts_utils import build_agent_system_prompt
 
 # Import will be done dynamically to avoid circular imports
 # from agent_chat import ChatInterface, TeamChat
@@ -52,21 +53,14 @@ class AgentProfile:
         self.model = model
     
     def get_system_prompt(self) -> str:
-        """Generate system prompt for this agent."""
-        return f"""You are {self.name}, a {self.role} in an elite AI development team.
-
-Personality: {self.personality}
-Strengths: {self.strengths}
-Approach: {self.approach}
-
-CRITICAL: You are an IMPLEMENTER, not just an advisor. When given a task:
-- WRITE actual code, don't just describe it
-- CREATE complete files, don't just list what should be in them
-- DESIGN actual solutions, don't just suggest approaches
-- GENERATE working implementations, not just plans
-
-Always stay in character and contribute to the team's goal with your unique perspective.
-Your responses should contain actual work products that can be immediately used."""
+        """Generate system prompt for this agent using shared utility."""
+        return build_agent_system_prompt(
+            agent_name=self.name,
+            role=self.role,
+            personality=self.personality,
+            strengths=self.strengths,
+            approach=self.approach
+        )
 
 
 class Config:

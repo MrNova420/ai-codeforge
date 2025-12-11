@@ -6,6 +6,7 @@ Enhanced Agent Chat Interface with streaming and tool access
 import os
 import sys
 from typing import List, Dict, Optional, Callable
+from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
@@ -35,6 +36,8 @@ class EnhancedAgentChat:
         self.file_manager = file_manager
         self.code_executor = code_executor
         self.messages: List[Message] = []
+        self.context_window = []  # Enhanced context tracking
+        self.execution_history = []  # Track what agent has done
         
         # Get model configuration
         self.model_name = config.get_agent_model(agent.name)
@@ -49,20 +52,74 @@ class EnhancedAgentChat:
         else:
             self.model_type = self.model_name
         
-        # Initialize with system prompt
+        # Initialize with enhanced system prompt
         system_prompt = agent.get_system_prompt()
+        
+        # Add tool capabilities with examples
         if file_manager or code_executor:
-            system_prompt += "\n\nYou have access to:\n"
+            system_prompt += "\n\n🛠️ TOOLS AVAILABLE:\n"
             if file_manager:
-                system_prompt += "- File operations: READ_FILE:<path>, WRITE_FILE:<path>, LIST_FILES\n"
+                system_prompt += """
+FILE OPERATIONS:
+- READ_FILE:<path> - Read a file's contents
+- WRITE_FILE:<path>|<content> - Write content to a file  
+- LIST_FILES:<directory> - List files in directory
+
+Example: 
+"Let me create the API file:
+WRITE_FILE:api.py|
+```python
+from flask import Flask
+app = Flask(__name__)
+```
+"
+"""
             if code_executor:
-                system_prompt += "- Code execution: EXECUTE_PYTHON:<code>, EXECUTE_JS:<code>\n"
+                system_prompt += """
+CODE EXECUTION:
+- EXECUTE_PYTHON:<code> - Run Python code
+- EXECUTE_JS:<code> - Run JavaScript code
+- EXECUTE_BASH:<command> - Run shell command
+
+Example:
+"Testing the function:
+EXECUTE_PYTHON:
+```python
+def test():
+    return sum([1,2,3])
+print(test())
+```
+"
+"""
+        
+        system_prompt += """
+
+💡 BEST PRACTICES:
+- Always provide complete, working solutions
+- Include error handling and edge cases
+- Add helpful comments for complex logic
+- Test your code mentally before presenting
+- Follow language/framework conventions
+- Make code maintainable and extensible
+
+🎯 OUTPUT FORMAT:
+1. Brief summary (1-2 sentences)
+2. Complete implementation with code/files
+3. Usage examples or next steps
+"""
         
         self.messages.append(Message("system", system_prompt))
     
     def send_message(self, content: str, stream: bool = False, 
                     on_token: Optional[Callable] = None) -> str:
-        """Send message and get response."""
+        """Send message and get response with enhanced context tracking."""
+        # Add to context window
+        self.context_window.append({
+            'timestamp': datetime.now().isoformat(),
+            'role': 'user',
+            'content': content[:200]  # Store summary for context
+        })
+        
         self.messages.append(Message("user", content))
         
         if stream and self.model_type == "openai":
@@ -76,6 +133,20 @@ class EnhancedAgentChat:
                 response = self._gemini_chat(content)
             else:
                 response = self._local_chat(content)
+        
+        # Track execution
+        self.execution_history.append({
+            'timestamp': datetime.now().isoformat(),
+            'task': content[:100],
+            'result_length': len(response),
+            'has_code': '```' in response or 'def ' in response or 'class ' in response
+        })
+        
+        self.context_window.append({
+            'timestamp': datetime.now().isoformat(),
+            'role': 'assistant',
+            'content': response[:200]
+        })
         
         self.messages.append(Message("assistant", response, self.agent.name))
         return response
@@ -313,3 +384,34 @@ class EnhancedAgentChat:
                     augmented_response += f"\n\n[Execution Result]\nOutput: {result.output}\n"
         
         return augmented_response
+    
+    def get_agent_stats(self) -> Dict:
+        """Get performance statistics for this agent."""
+        total_tasks = len(self.execution_history)
+        code_generated = sum(1 for task in self.execution_history if task.get('has_code', False))
+        total_output = sum(task.get('result_length', 0) for task in self.execution_history)
+        
+        return {
+            'agent_name': self.agent.name,
+            'total_tasks': total_tasks,
+            'code_generated': code_generated,
+            'total_output_chars': total_output,
+            'avg_output_chars': total_output // total_tasks if total_tasks > 0 else 0,
+            'context_depth': len(self.context_window),
+            'messages_exchanged': len(self.messages)
+        }
+    
+    def get_context_summary(self) -> str:
+        """Get a summary of recent context."""
+        if not self.context_window:
+            return "No context available"
+        
+        recent = self.context_window[-5:]  # Last 5 interactions
+        summary = f"Recent Activity ({len(recent)} interactions):\n"
+        for item in recent:
+            role_icon = "👤" if item['role'] == 'user' else "🤖"
+            timestamp = item['timestamp'].split('T')[1][:8]
+            content_preview = item['content'][:80] + "..." if len(item['content']) > 80 else item['content']
+            summary += f"{role_icon} [{timestamp}] {content_preview}\n"
+        
+        return summary

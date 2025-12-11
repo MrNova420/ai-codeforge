@@ -27,6 +27,7 @@ from security.security_operations import get_security_ops
 from research.innovation_lab import get_innovation_lab
 from design.design_system import get_design_studio
 from integration.enterprise_hub import get_enterprise_hub
+from prompts_utils import build_actionable_task_prompt
 
 
 class WorkMode(Enum):
@@ -437,22 +438,12 @@ class MasterOrchestrator:
     async def _execute_agent_task(self, agent: Any, assignment: AgentAssignment) -> str:
         """Execute a single agent task with action-oriented prompting."""
         try:
-            # Wrap task with actionable instructions
-            actionable_task = f"""You are assigned: {assignment.task}
-
-CRITICAL INSTRUCTIONS:
-- ACTUALLY IMPLEMENT this - don't just suggest or explain
-- If it's code: Write the complete, working code
-- If it's design: Create the actual design specifications with details
-- If it's a feature: Build it fully with all necessary components
-- Include file contents if creating files
-- Provide complete, ready-to-use implementations
-
-Your response should contain the actual work product, not just plans or suggestions.
-
-Role: {assignment.role}
-
-BEGIN YOUR IMPLEMENTATION:"""
+            # Use shared utility for consistent actionable prompts
+            actionable_task = build_actionable_task_prompt(
+                task_description=assignment.task,
+                agent_role=assignment.role,
+                additional_context="Focus on your specialty and provide production-ready solutions."
+            )
             
             if hasattr(agent, 'execute'):
                 result = await agent.execute(actionable_task)
